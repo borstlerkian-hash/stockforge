@@ -1,0 +1,19 @@
+# Render blueprint: FastAPI backend that also serves the built frontend.
+# The SPA + /api share one origin, which the frontend's relative /api paths require.
+# frontend/dist is committed (built locally), so Render needs no Node toolchain.
+services:
+  - type: web
+    name: stockforge
+    runtime: python
+    plan: free
+    buildCommand: pip install -r backend/requirements.txt
+    startCommand: uvicorn server:app --app-dir backend --host 0.0.0.0 --port $PORT
+    healthCheckPath: /
+    envVars:
+      - key: DB_NAME
+        value: stockforge
+      - key: CORS_ORIGINS
+        value: "*"
+      # Secrets are set in the Render dashboard, never committed:
+      # MONGO_URL, CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY,
+      # ADMIN_EMAIL, ADMIN_CODE, ADMIN_PASSPHRASE, EMERGENT_LLM_KEY
