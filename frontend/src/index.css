@@ -233,11 +233,12 @@ html { -webkit-tap-highlight-color: transparent; }
 .nav-pill:hover { color: #F1F5F9; background: rgba(148, 163, 184, 0.07); }
 .nav-pill-on { color: #F8FAFC; background: var(--a-soft); box-shadow: inset 0 0 0 1px var(--a-line); }
 
-.mobile-dock { background: rgba(8, 11, 17, 0.88); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
+.mobile-dock { background: rgba(8, 11, 17, 0.92); backdrop-filter: blur(18px); -webkit-backdrop-filter: blur(18px);
   border-top: 1px solid rgba(148, 163, 184, 0.08); padding-bottom: env(safe-area-inset-bottom); scrollbar-width: none; }
 .mobile-dock::-webkit-scrollbar { display: none; }
-.dock-btn { font-family: "JetBrains Mono Variable", monospace; font-size: 10px; letter-spacing: 0.12em; text-transform: uppercase;
-  padding: 10px 14px; border-radius: 10px; color: #64748B; transition: background-color 0.2s ease, color 0.2s ease; }
+.dock-btn { font-family: "JetBrains Mono Variable", monospace; font-size: 10px; letter-spacing: 0.1em; text-transform: uppercase;
+  padding: 8px 4px; border-radius: 10px; color: #64748B; transition: background-color 0.2s ease, color 0.2s ease;
+  min-height: 44px; display: flex; align-items: center; justify-content: center; }
 .dock-btn-on { color: #F8FAFC; background: var(--a-soft); box-shadow: inset 0 0 0 1px var(--a-line); }
 
 .seg { display: inline-flex; padding: 3px; gap: 2px; border-radius: 11px; border: 1px solid rgba(148, 163, 184, 0.12); background: rgba(11, 16, 27, 0.8); }
@@ -267,6 +268,7 @@ html { -webkit-tap-highlight-color: transparent; }
   html, body { overflow-x: hidden; }
   .mobile-dock { padding-left: 4px; padding-right: 4px; }
   .dock-btn { font-size: 9px; padding: 8px 10px; letter-spacing: 0.08em; }
+  button, a { touch-action: manipulation; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sk::after, .typing i, .sf-banner, .proposal { animation: none; }

@@ -80,7 +80,7 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
             <span className="relative w-5 h-5 rotate-45 border-2 animate-spin" style={{ borderColor: "var(--a)", animationDuration: "8s" }} />
           </span>
           <span className="text-left leading-none">
-            <span className="font-disp font-bold tracking-[0.18em] text-lg block" data-testid="header-site-name">{site?.site_name || "STOCKFORGE"}</span>
+            <span className="font-disp font-bold tracking-[0.18em] text-base sm:text-lg block" data-testid="header-site-name">{site?.site_name || "STOCKFORGE"}</span>
             <span className="font-mono text-[9px] tracking-[0.3em] accent" data-testid="header-tier-sub">{snap?.tiers[themeTier - 1]?.name} TERMINAL</span>
           </span>
         </button>
@@ -112,14 +112,41 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
 export const MobileNav = () => {
   const { page, setPage } = useSF();
   const pages = useNavPages();
+  const [more, setMore] = useState(false);
+  // Primary tabs shown directly in the dock; the rest live behind "More".
+  const PRIMARY = ["home", "markets", "dash", "ai", "watch"];
+  const primary = pages.filter((p) => PRIMARY.includes(p.id));
+  const rest = pages.filter((p) => !PRIMARY.includes(p.id));
   return (
-    <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 mobile-dock overflow-x-auto" aria-label="Primary mobile">
-      <div className="flex min-w-max gap-0.5 px-1 py-1.5">
-        {pages.map((p) => (
-          <button key={p.id} onClick={() => setPage(p.id)} data-testid={`mobile-nav-${p.id}`}
-            className={`dock-btn ${page === p.id ? "dock-btn-on" : ""}`}>{p.label}</button>
-        ))}
-      </div>
-    </nav>
+    <>
+      <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 mobile-dock" aria-label="Primary mobile">
+        <div className="flex items-center justify-around gap-0.5 px-1 py-1.5">
+          {primary.map((p) => (
+            <button key={p.id} onClick={() => setPage(p.id)} data-testid={`mobile-nav-${p.id}`}
+              className={`dock-btn flex-1 min-w-0 ${page === p.id ? "dock-btn-on" : ""}`}>{p.label}</button>
+          ))}
+          {rest.length > 0 && (
+            <button onClick={() => setMore(true)} data-testid="mobile-nav-more"
+              className={`dock-btn flex-1 min-w-0 ${rest.some((p) => p.id === page) ? "dock-btn-on" : ""}`}>More</button>
+          )}
+        </div>
+      </nav>
+      {more && (
+        <div className="lg:hidden fixed inset-0 z-50 bg-black/60 backdrop-blur-sm flex items-end" onClick={() => setMore(false)} data-testid="mobile-more-overlay">
+          <div className="w-full bg-[#0D131F] border-t border-white/10 rounded-t-2xl p-4 pb-[calc(1rem+env(safe-area-inset-bottom))]" onClick={(e) => e.stopPropagation()} data-testid="mobile-more-sheet">
+            <div className="flex items-center justify-between mb-3">
+              <span className="font-disp text-lg">More pages</span>
+              <button className="sf-btn sf-btn-sm" onClick={() => setMore(false)} data-testid="mobile-more-close">Close</button>
+            </div>
+            <div className="grid grid-cols-3 gap-2">
+              {rest.map((p) => (
+                <button key={p.id} onClick={() => { setPage(p.id); setMore(false); }} data-testid={`mobile-more-${p.id}`}
+                  className={`dock-btn !py-3 ${page === p.id ? "dock-btn-on" : ""}`}>{p.label}</button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+    </>
   );
 };

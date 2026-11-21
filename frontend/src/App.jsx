@@ -7,10 +7,18 @@ const Terminal = lazy(() => import("@/pages/Terminal"));
 const Landing = lazy(() => import("@/pages/Landing"));
 import { Background } from "@/components/sf/Background";
 
+import { HackerAvatar } from "@/components/sf/HackerAvatar";
+
 const AuthPage = ({ children }) => (
   <div className="min-h-screen relative flex items-center justify-center px-4 py-10">
     <Background tier={5} />
-    <div className="relative z-10">{children}</div>
+    <div className="relative z-10 w-full max-w-md">
+      {children}
+      <div className="mt-6 flex items-center justify-center gap-2 text-neutral-500 font-mono text-[10px] tracking-widest">
+        <HackerAvatar size={24} />
+        <span>CREATED BY KIKI</span>
+      </div>
+    </div>
   </div>
 );
 
