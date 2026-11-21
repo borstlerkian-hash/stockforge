@@ -76,8 +76,8 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
       <div className="max-w-[1600px] mx-auto flex items-center gap-4 px-4 lg:px-8 h-16">
         <button className="flex items-center gap-3 shrink-0" onClick={() => setPage("home")} data-testid="brand-home-button">
           <span className="relative w-8 h-8 grid place-items-center">
-            <span className="absolute inset-0 rounded-full blur-md" style={{ background: "var(--a)", opacity: 0.6 }} />
-            <span className="relative w-5 h-5 rotate-45 border-2" style={{ borderColor: "var(--a)" }} />
+            <span className="absolute inset-0 rounded-full blur-md animate-pulse" style={{ background: "var(--a)", opacity: 0.6 }} />
+            <span className="relative w-5 h-5 rotate-45 border-2 animate-spin" style={{ borderColor: "var(--a)", animationDuration: "8s" }} />
           </span>
           <span className="text-left leading-none">
             <span className="font-disp font-bold tracking-[0.18em] text-lg block" data-testid="header-site-name">{site?.site_name || "STOCKFORGE"}</span>
