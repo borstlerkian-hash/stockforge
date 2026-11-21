@@ -107,7 +107,8 @@ class LlmChat:
         self._raise_for_status(resp)
         data = resp.json()
         try:
-            return data["choices"][0]["message"].get("content") or ""
+            msg = data["choices"][0]["message"]
+            return (msg.get("content") or msg.get("reasoning_content") or "")
         except (KeyError, IndexError) as e:
             raise RuntimeError(f"Unexpected LLM response shape: {str(data)[:300]}") from e
 
@@ -138,7 +139,7 @@ class LlmChat:
                     if not choices:
                         continue
                     delta = choices[0].get("delta") or {}
-                    content = delta.get("content")
+                    content = delta.get("content") or delta.get("reasoning_content")
                     if content:
                         yield TextDelta(content)
         yield StreamDone()
