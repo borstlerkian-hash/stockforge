@@ -72,8 +72,8 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
   const pages = useNavPages();
   const site = useSite().data?.settings;
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#080B11]/85 border-b border-white/[0.06]">
-      <div className="max-w-[1600px] mx-auto flex items-center gap-4 px-4 lg:px-8 h-16">
+    <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#080B11]/85 border-b border-white/[0.06]" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+      <div className="max-w-[1600px] mx-auto flex items-center gap-2 sm:gap-4 px-3 sm:px-4 lg:px-8 h-14 sm:h-16">
         <button className="flex items-center gap-3 shrink-0" onClick={() => setPage("home")} data-testid="brand-home-button">
           <span className="relative w-8 h-8 grid place-items-center">
             <span className="absolute inset-0 rounded-full blur-md animate-pulse" style={{ background: "var(--a)", opacity: 0.6 }} />
@@ -114,7 +114,7 @@ export const MobileNav = () => {
   const pages = useNavPages();
   return (
     <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 mobile-dock overflow-x-auto" aria-label="Primary mobile">
-      <div className="flex min-w-max gap-1 px-2 py-2">
+      <div className="flex min-w-max gap-0.5 px-1 py-1.5">
         {pages.map((p) => (
           <button key={p.id} onClick={() => setPage(p.id)} data-testid={`mobile-nav-${p.id}`}
             className={`dock-btn ${page === p.id ? "dock-btn-on" : ""}`}>{p.label}</button>

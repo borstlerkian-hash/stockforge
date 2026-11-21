@@ -264,6 +264,9 @@ html { -webkit-tap-highlight-color: transparent; }
 @media (max-width: 640px) {
   .sf-btn { padding: 9px 13px; }
   .sf-panel { border-radius: 12px; }
+  html, body { overflow-x: hidden; }
+  .mobile-dock { padding-left: 4px; padding-right: 4px; }
+  .dock-btn { font-size: 9px; padding: 8px 10px; letter-spacing: 0.08em; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sk::after, .typing i, .sf-banner, .proposal { animation: none; }
