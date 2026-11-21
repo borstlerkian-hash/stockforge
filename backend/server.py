@@ -50,19 +50,22 @@ def new_user(uid):
 def _is_admin_email(uid):
     """One Clerk lookup per user: is a VERIFIED email of theirs listed in ADMIN_EMAIL?"""
     admins = {e.strip().lower() for e in os.environ.get("ADMIN_EMAIL", "").split(",") if e.strip()}
-    if not admins:
+    if not admins or not os.environ.get("CLERK_SECRET_KEY"):
         return False
-    r = requests.get(f"https://api.clerk.com/v1/users/{uid}", timeout=10,
-                     headers={"Authorization": f"Bearer {os.environ['CLERK_SECRET_KEY']}", "User-Agent": "stockforge"})
-    r.raise_for_status()
-    return any(e["email_address"].lower() in admins and (e.get("verification") or {}).get("status") == "verified"
-               for e in r.json().get("email_addresses", []))
+    try:
+        r = requests.get(f"https://api.clerk.com/v1/users/{uid}", timeout=10,
+                         headers={"Authorization": f"Bearer {os.environ.get('CLERK_SECRET_KEY', '')}", "User-Agent": "stockforge"})
+        r.raise_for_status()
+        return any(e["email_address"].lower() in admins and (e.get("verification") or {}).get("status") == "verified"
+                   for e in r.json().get("email_addresses", []))
+    except Exception:
+        return False
 
 
 def _clerk_profile(uid):
     try:
         r = requests.get(f"https://api.clerk.com/v1/users/{uid}", timeout=8,
-                         headers={"Authorization": f"Bearer {os.environ['CLERK_SECRET_KEY']}", "User-Agent": "stockforge"})
+                         headers={"Authorization": f"Bearer {os.environ.get('CLERK_SECRET_KEY', '')}", "User-Agent": "stockforge"})
         r.raise_for_status()
         j = r.json()
         emails = j.get("email_addresses") or []
