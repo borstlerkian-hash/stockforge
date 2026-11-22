@@ -144,7 +144,7 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
           initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(e) => e.target === e.currentTarget && onClose()}
           data-testid="prediction-overlay">
           <motion.div role="dialog" aria-modal="true" aria-label={`${sym} prediction`}
-            className="forecast-shell relative w-full max-w-[1280px] bg-[#0B0F19] border border-[#00F0FF]/30 shadow-[0_0_60px_-10px_rgba(0,240,255,0.35)]"
+            className="forecast-shell relative w-full max-w-[1400px] bg-[#0B0F19] border border-[#00F0FF]/30 shadow-[0_0_60px_-10px_rgba(0,240,255,0.35)]"
             initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.97, opacity: 0 }}
             transition={{ type: "spring", damping: 24, stiffness: 300 }} data-testid="prediction-dialog">
             <span className="hud-corner tl" /><span className="hud-corner tr" /><span className="hud-corner bl" /><span className="hud-corner br" />
@@ -189,15 +189,15 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
               </div>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 p-3 sm:p-5">
-              {/* chart */}
-              <Hud className="lg:col-span-8 !p-0 overflow-hidden" testid="prediction-chart">
+            <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 p-3 sm:p-5">
+              {/* chart - full width */}
+              <Hud className="lg:col-span-12 !p-0 overflow-hidden" testid="prediction-chart">
                 <div className="flex flex-wrap items-center gap-x-4 gap-y-1 px-4 pt-3 font-mono text-[10px] tracking-widest uppercase">
                   <span className="text-slate-400">{p ? `${p.tf_label} · ${p.horizon_bars} × ${p.bar} bars · ${p.paths.toLocaleString()} paths` : "SIMULATING…"}</span>
                   <span style={{ color: C.best }}>— — BEST</span><span style={{ color: C.avg }}>━ AVERAGE</span><span style={{ color: C.worst }}>— — WORST</span>
                   <span style={{ color: C.res }}>┄ RESISTANCE</span><span style={{ color: C.sup }}>┄ SUPPORT</span>
                 </div>
-                <div className="relative h-[360px] sm:h-[440px] scan-viewport">
+                <div className="relative h-[420px] sm:h-[520px] scan-viewport">
                   {q.isLoading && (
                     <div className="absolute inset-0 grid place-items-center" data-testid="prediction-loading">
                       <div className="text-center">
@@ -214,7 +214,7 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
                   )}
                   {p && (
                     <ResponsiveContainer width="100%" height="100%">
-                      <ComposedChart data={rows} margin={{ top: 16, right: 64, bottom: 8, left: 8 }}>
+                      <ComposedChart data={rows} margin={{ top: 16, right: 8, bottom: 8, left: 0 }}>
                         <defs>
                           <linearGradient id="cone95" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor={C.cyan} stopOpacity={0.18} /><stop offset="1" stopColor={C.cyan} stopOpacity={0.05} /></linearGradient>
                           <linearGradient id="cone50" x1="0" x2="1" y1="0" y2="0"><stop offset="0" stopColor={C.cyan} stopOpacity={0.3} /><stop offset="1" stopColor={C.cyan} stopOpacity={0.1} /></linearGradient>
@@ -223,7 +223,7 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
                         </defs>
                         <CartesianGrid stroke="#1E293B" strokeDasharray="2 6" />
                         <XAxis dataKey="t" type="number" scale="time" domain={["dataMin", "dataMax"]} tickFormatter={tickTime(tf)} tick={{ fill: "#64748B", fontSize: 10, fontFamily: "JetBrains Mono Variable" }} stroke="#1E293B" minTickGap={40} />
-                        <YAxis orientation="right" domain={yDomain} tickFormatter={(v: number) => fmtPrice(v)} tick={{ fill: "#64748B", fontSize: 10, fontFamily: "JetBrains Mono Variable" }} stroke="#1E293B" width={78} allowDataOverflow />
+                        <YAxis orientation="right" domain={yDomain} tickFormatter={(v: number) => fmtPrice(v)} tick={{ fill: "#64748B", fontSize: 10, fontFamily: "JetBrains Mono Variable" }} stroke="#1E293B" width={64} allowDataOverflow />
                         <Tooltip content={<ChartTip tf={tf} />} cursor={{ stroke: C.cyan, strokeOpacity: 0.4, strokeDasharray: "3 3" }} />
                         {show.cone && <Area dataKey="band95" stroke="none" fill="url(#cone95)" isAnimationActive animationDuration={800} connectNulls />}
                         {show.cone && <Area dataKey="band50" stroke="none" fill="url(#cone50)" isAnimationActive animationDuration={800} connectNulls />}
@@ -245,7 +245,7 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
               </Hud>
 
               {/* scenarios + probabilities */}
-              <div className="lg:col-span-4 space-y-3">
+              <div className="lg:col-span-6 space-y-3">
                 <Hud testid="prediction-scenarios">
                   <p className="hud-lab"><Crosshair size={11} /> SCENARIOS · {p?.tf_label ?? "—"}</p>
                   {p ? (
