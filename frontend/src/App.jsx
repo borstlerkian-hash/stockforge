@@ -8,6 +8,7 @@ const Landing = lazy(() => import("@/pages/Landing"));
 import { Background } from "@/components/sf/Background";
 
 import { HackerAvatar } from "@/components/sf/HackerAvatar";
+import ErrorBoundary from "@/components/sf/ErrorBoundary";
 
 const AuthPage = ({ children }) => (
   <div className="min-h-screen relative flex items-center justify-center px-4 py-10">
@@ -45,9 +46,11 @@ function StaticRoutes() {
 
 function App() {
   return (
-    <ClerkAuthProvider>
-      <AuthedRoutes />
-    </ClerkAuthProvider>
+    <ErrorBoundary>
+      <ClerkAuthProvider>
+        <AuthedRoutes />
+      </ClerkAuthProvider>
+    </ErrorBoundary>
   );
 }
 
