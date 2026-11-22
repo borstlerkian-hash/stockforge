@@ -275,3 +275,6 @@ html { -webkit-tap-highlight-color: transparent; }
 @media (prefers-reduced-motion: reduce) {
   .sk::after, .typing i, .sf-banner, .proposal { animation: none; }
 }
+
+@keyframes matrix-rain { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
+@keyframes scan-line { 0% { top: -2px; } 100% { top: 100%; } }
