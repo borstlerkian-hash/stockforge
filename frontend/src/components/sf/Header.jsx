@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Download, Search, Wifi, WifiOff } from "lucide-react";
+import { Home, BarChart3, LayoutDashboard, Bot, Star, MoreHorizontal, Download, Search, Wifi, WifiOff } from "lucide-react";
 import { UserButton } from "@clerk/react";
 import { useSF } from "@/context/SFContext";
 import { PAGES, pct, priceFmt } from "@/lib/theme";
@@ -114,20 +114,30 @@ export const MobileNav = () => {
   const pages = useNavPages();
   const [more, setMore] = useState(false);
   // Primary tabs shown directly in the dock; the rest live behind "More".
+const ICONS = { home: Home, markets: BarChart3, dash: LayoutDashboard, ai: Bot, watch: Star };
   const PRIMARY = ["home", "markets", "dash", "ai", "watch"];
   const primary = pages.filter((p) => PRIMARY.includes(p.id));
   const rest = pages.filter((p) => !PRIMARY.includes(p.id));
   return (
     <>
       <nav className="lg:hidden fixed bottom-0 inset-x-0 z-40 mobile-dock" aria-label="Primary mobile">
-        <div className="flex items-center justify-around gap-0.5 px-1 py-1.5">
-          {primary.map((p) => (
-            <button key={p.id} onClick={() => setPage(p.id)} data-testid={`mobile-nav-${p.id}`}
-              className={`dock-btn flex-1 min-w-0 ${page === p.id ? "dock-btn-on" : ""}`}>{p.label}</button>
-          ))}
+        <div className="flex items-center justify-around gap-0 px-1 py-1.5">
+          {primary.map((p) => {
+            const Icon = ICONS[p.id];
+            return (
+              <button key={p.id} onClick={() => setPage(p.id)} data-testid={`mobile-nav-${p.id}`}
+                className={`dock-btn flex-1 min-w-0 flex flex-col items-center gap-0.5 ${page === p.id ? "dock-btn-on" : ""}`}>
+                {Icon && <Icon size={16} />}
+                <span className="text-[8px] leading-none">{p.label}</span>
+              </button>
+            );
+          })}
           {rest.length > 0 && (
             <button onClick={() => setMore(true)} data-testid="mobile-nav-more"
-              className={`dock-btn flex-1 min-w-0 ${rest.some((p) => p.id === page) ? "dock-btn-on" : ""}`}>More</button>
+              className={`dock-btn flex-1 min-w-0 flex flex-col items-center gap-0.5 ${rest.some((p) => p.id === page) ? "dock-btn-on" : ""}`}>
+              <MoreHorizontal size={16} />
+              <span className="text-[8px] leading-none">More</span>
+            </button>
           )}
         </div>
       </nav>
