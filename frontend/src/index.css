@@ -278,3 +278,6 @@ html { -webkit-tap-highlight-color: transparent; }
 
 @keyframes matrix-rain { 0% { transform: translateY(-100%); } 100% { transform: translateY(100vh); } }
 @keyframes scan-line { 0% { top: -2px; } 100% { top: 100%; } }
+@keyframes glitch-shift { 0% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 100% { transform: translateX(-4px); } }
+.animate-fade-in { animation: fade-in 0.3s ease both; }
+@keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
