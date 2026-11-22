@@ -1,5 +1,6 @@
 import { lazy, Suspense, useEffect, useState } from "react";
 import { Toaster } from "sonner";
+import { ArrowUp } from "lucide-react";
 import { SFProvider, useSF } from "@/context/SFContext";
 import { Background } from "@/components/sf/Background";
 import { Header, MobileNav } from "@/components/sf/Header";
@@ -75,8 +76,8 @@ const Boot = () => {
   const [leaving, setLeaving] = useState(false);
   useEffect(() => {
     if (!show) return;
-    const a = setTimeout(() => setLeaving(true), 900);
-    const b = setTimeout(() => { try { sessionStorage.setItem("sf_booted", "1"); } catch { /* ignore */ } setShow(false); }, 1150);
+    const a = setTimeout(() => setLeaving(true), 700);
+    const b = setTimeout(() => { try { sessionStorage.setItem("sf_booted", "1"); } catch { /* ignore */ } setShow(false); }, 900);
     return () => { clearTimeout(a); clearTimeout(b); };
   }, [show]);
   if (!show) return null;
@@ -124,8 +125,15 @@ const Shell = () => {
   const [cmd, setCmd] = useState(false);
   const [install, setInstall] = useState(false);
   const [bell, setBell] = useState(false);
+  const [showTop, setShowTop] = useState(false);
   const pages = useNavPages();
   const site = useSite().data?.settings;
+
+  useEffect(() => {
+    const onScroll = () => setShowTop(window.scrollY > 600);
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
 
   useEffect(() => {
     const onKey = (e) => {
@@ -162,6 +170,16 @@ const Shell = () => {
           <span>NOT INVESTMENT ADVICE</span>
         </footer>
         <MobileNav />
+        {showTop && (
+          <button
+            onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
+            data-testid="scroll-to-top"
+            className="lg:hidden fixed right-4 bottom-24 z-40 w-10 h-10 grid place-items-center rounded-full bg-[#0D131F]/90 border border-white/10 text-neutral-300 shadow-lg backdrop-blur-sm active:scale-95 transition"
+            aria-label="Scroll to top"
+          >
+            <ArrowUp size={16} />
+          </button>
+        )}
       </div>
       <CommandPalette open={cmd} onOpenChange={setCmd} onInstall={() => setInstall(true)} />
       <InstallDrawer open={install} onOpenChange={setInstall} extra={<AdminAccess onDone={() => setInstall(false)} />} />
