@@ -152,7 +152,11 @@ html.fx-scan .scanlines { position: fixed; inset: 0; pointer-events: none; z-ind
 @media (prefers-reduced-motion: reduce) { .scan-viewport::before, .forecast-spinner, .sk-pulse { animation: none; } }
 
 
-/* ---------- Smoothness pass ---------- */
+/* Mobile dock improvements */
+.mobile-dock { background: rgba(8, 11, 17, 0.95) !important; backdrop-filter: blur(20px) !important; -webkit-backdrop-filter: blur(20px) !important; border-top: 1px solid rgba(0, 255, 255, 0.15) !important; box-shadow: 0 -4px 30px rgba(0, 0, 0, 0.5) !important; }
+.dock-btn { min-height: 48px !important; gap: 2px !important; }
+.dock-btn:active { transform: scale(0.92) !important; background: var(--a-soft) !important; }
+.dock-btn-on { box-shadow: inset 0 0 0 1px var(--a-line), 0 0 12px var(--a-glow) !important; }
 .sf-orb { will-change: transform, opacity; opacity: var(--lo, 0.15); animation: orb-pulse 9s ease-in-out infinite; }
 @keyframes orb-pulse { 0%, 100% { transform: scale(0.8); opacity: var(--lo, 0.15); } 50% { transform: scale(1.1); opacity: var(--hi, 0.3); } }
 .sf-ring { will-change: transform, opacity; animation: ring-ping 6s ease-out infinite; }
@@ -263,14 +267,26 @@ html { -webkit-tap-highlight-color: transparent; }
 @keyframes typing { 0%, 100% { opacity: 0.25; transform: translateY(0); } 40% { opacity: 1; transform: translateY(-3px); } }
 
 @media (max-width: 640px) {
-  .sf-btn { padding: 9px 13px; }
+  .sf-btn { padding: 10px 14px; font-size: 11px; min-height: 40px; }
   .sf-panel { border-radius: 12px; }
   html, body { overflow-x: hidden; }
-  .mobile-dock { padding-left: 4px; padding-right: 4px; }
-  .dock-btn { font-size: 9px; padding: 8px 10px; letter-spacing: 0.08em; }
+  .mobile-dock { padding-left: 4px; padding-right: 4px; padding-bottom: calc(env(safe-area-inset-bottom) + 4px); }
+  .dock-btn { font-size: 9px; padding: 10px 6px; letter-spacing: 0.06em; min-height: 48px; }
   button, a { touch-action: manipulation; }
-  .tape-track { animation-duration: 90s; }
-  .page-in { animation-duration: 0.2s; }
+  .tape-track { animation-duration: 120s; }
+  .page-in { animation-duration: 0.15s; }
+  /* Better mobile typography */
+  .font-disp { letter-spacing: -0.02em; }
+  /* Prevent text overflow */
+  p, span, div { word-wrap: break-word; overflow-wrap: break-word; }
+  /* Better mobile cards */
+  .sf-panel { margin-bottom: 8px; }
+  /* Smoother scrolling on mobile */
+  * { -webkit-overflow-scrolling: touch; }
+  /* Better tap feedback */
+  button:active, a:active, [role="button"]:active { transform: scale(0.96); transition: transform 0.1s ease; }
+  /* Hide non-essential on very small screens */
+  .hidden-xs { display: none; }
 }
 @media (prefers-reduced-motion: reduce) {
   .sk::after, .typing i, .sf-banner, .proposal { animation: none; }

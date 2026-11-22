@@ -229,7 +229,7 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
                   <span style={{ color: C.best }}>— — BEST</span><span style={{ color: C.avg }}>━ AVERAGE</span><span style={{ color: C.worst }}>— — WORST</span>
                   <span style={{ color: C.res }}>┄ RESISTANCE</span><span style={{ color: C.sup }}>┄ SUPPORT</span>
                 </div>
-                <div className="relative h-[420px] sm:h-[520px] scan-viewport">
+                <div className="relative h-[500px] sm:h-[560px] scan-viewport">
                   {q.isLoading && (
                     <div className="absolute inset-0 grid place-items-center" data-testid="prediction-loading">
                       <div className="text-center">
