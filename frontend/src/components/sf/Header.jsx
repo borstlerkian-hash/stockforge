@@ -97,11 +97,11 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
           <button className="sf-btn sf-btn-sm" onClick={() => setDepositOpen(true)} data-testid="header-deposit-button"><span className="accent">$</span><span className="hidden sm:inline">Deposit</span></button>
           <BellButton onClick={onBell} />
           <NetPill />
-          <button className="sf-btn sf-btn-sm sf-btn-p" onClick={onInstall} data-testid="get-app-button"><Download size={14} /><span className="hidden sm:inline">Get app</span></button>
+          <button className="sf-btn sf-btn-sm sf-btn-p hidden sm:inline-flex" onClick={onInstall} data-testid="get-app-button"><Download size={14} /><span className="hidden sm:inline">Get app</span></button>
           <Clock />
           <TierSwitch />
           {tier && <span className="hidden md:inline font-mono text-[10px] px-2 py-1 border border-[var(--a)] accent tracking-widest" data-testid="tier-badge">T{tier.id} {tier.name}</span>}
-          <UserButton />
+          <UserButton appearance={{ elements: { avatarBox: "w-8 h-8 sm:w-9 sm:h-9 ring-2 ring-[var(--a)]/30" } }} />
         </div>
       </div>
       <TickerTape />
