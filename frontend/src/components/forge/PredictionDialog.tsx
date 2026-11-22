@@ -140,16 +140,15 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
   return (
     <AnimatePresence>
       {sym && (
-        <motion.div className="fixed inset-0 z-[80] flex items-start justify-center overflow-y-auto bg-black/75 backdrop-blur-sm p-2 sm:p-6"
-          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(e) => e.target === e.currentTarget && onClose()}
-          data-testid="prediction-overlay">
+        <motion.div className="fixed inset-0 z-[80] bg-[#0B0F19] overflow-y-auto"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} data-testid="prediction-overlay">
           <motion.div role="dialog" aria-modal="true" aria-label={`${sym} prediction`}
-            className="forecast-shell relative w-full max-w-[1400px] bg-[#0B0F19] border border-[#00F0FF]/30 shadow-[0_0_60px_-10px_rgba(0,240,255,0.35)]"
-            initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.97, opacity: 0 }}
-            transition={{ type: "spring", damping: 24, stiffness: 300 }} data-testid="prediction-dialog">
+            className="relative min-h-screen w-full bg-[#0B0F19]"
+            initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -20 }}
+            transition={{ type: "spring", damping: 28, stiffness: 320 }} data-testid="prediction-dialog">
             <span className="hud-corner tl" /><span className="hud-corner tr" /><span className="hud-corner bl" /><span className="hud-corner br" />
-            {/* header */}
-            <div className="flex flex-wrap items-start gap-4 justify-between px-5 pt-5 pb-4 border-b border-[#1E293B]">
+            {/* Sticky header bar */}
+            <div className="sticky top-0 z-20 flex flex-wrap items-start gap-4 justify-between px-5 pt-5 pb-4 border-b border-[#1E293B] bg-[#0B0F19]/95 backdrop-blur-sm">
               <div>
                 <p className="font-mono text-[10px] tracking-[0.3em] text-[#00F0FF] flex items-center gap-2"><Radar size={12} /> QUANTUM FORECAST ENGINE</p>
                 <h2 className="font-forecast text-3xl sm:text-4xl font-bold tracking-wider mt-1 flex items-baseline gap-3" data-testid="prediction-symbol">
@@ -166,7 +165,7 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
                     </p>
                   </div>
                 )}
-                <button className="sf-btn sf-btn-sm" onClick={onClose} aria-label="Close prediction" data-testid="prediction-close-button"><X size={14} /></button>
+                <button className="sf-btn sf-btn-sm" onClick={onClose} aria-label="Close prediction" data-testid="prediction-close-button"><X size={14} /> Close</button>
               </div>
             </div>
             {/* Quick summary */}
