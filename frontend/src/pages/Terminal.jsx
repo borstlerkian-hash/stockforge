@@ -20,6 +20,7 @@ const Paper = lazy(() => import("@/pages/Paper"));
 const Tiers = lazy(() => import("@/pages/Tiers"));
 const Admin = lazy(() => import("@/pages/Admin"));
 import { AdminAccess } from "@/components/sf/AdminAccess";
+import { HackerAvatar } from "@/components/sf/HackerAvatar";
 import { BtcCheckout } from "@/components/sf/BtcCheckout";
 import { NotificationsSheet } from "@/components/sf/NotificationsSheet";
 const Markets = lazy(() => import("@/pages/Markets"));
@@ -80,12 +81,26 @@ const Boot = () => {
   }, [show]);
   if (!show) return null;
   return (
-    <div className={`fixed inset-0 z-[100] bg-[#080B11] grid place-items-center ${leaving ? "boot-out" : ""}`} data-testid="boot-screen">
-      <div className="w-72">
+    <div className={`fixed inset-0 z-[100] bg-[#050510] grid place-items-center ${leaving ? "boot-out" : ""}`} data-testid="boot-screen">
+      <div className="w-72 text-center space-y-4">
+        <div className="relative mx-auto w-20 h-20">
+          <div className="absolute inset-0 rounded-full blur-xl opacity-60 animate-pulse" style={{ background: "var(--a)" }} />
+          <svg viewBox="0 0 64 64" className="relative w-full h-full animate-spin" style={{ animationDuration: "4s" }}>
+            <polygon points="32,4 58,18 58,46 32,60 6,46 6,18" fill="none" stroke="var(--a)" strokeWidth="2" opacity="0.8" />
+            <polygon points="32,14 48,23 48,41 32,50 16,41 16,23" fill="none" stroke="var(--a)" strokeWidth="1" opacity="0.4" />
+            <circle cx="32" cy="32" r="6" fill="var(--a)" opacity="0.9">
+              <animate attributeName="r" values="4;8;4" dur="1.5s" repeatCount="indefinite" />
+            </circle>
+          </svg>
+        </div>
         <p className="font-disp text-4xl font-bold tracking-[0.2em]">{(() => { try { return JSON.parse(localStorage.getItem("sf_site_name") || "null"); } catch { return null; } })() || "STOCKFORGE"}</p>
-        <p className="font-mono text-[10px] tracking-[0.35em] accent mt-1">NEURAL TERMINAL · v3</p>
-        <p className="font-mono text-xs text-neutral-500 mt-6 caret">linking market feeds</p>
+        <p className="font-mono text-[10px] tracking-[0.35em] accent">NEURAL TERMINAL · v3</p>
+        <p className="font-mono text-xs text-neutral-500 mt-4 caret">linking market feeds</p>
         <div className="boot-bar h-[2px] bg-white/5 mt-3"><i /></div>
+        <div className="flex items-center justify-center gap-2 mt-4">
+          <HackerAvatar size={28} />
+          <span className="font-mono text-[9px] tracking-widest text-neutral-600">CREATED BY KIKI</span>
+        </div>
       </div>
     </div>
   );
