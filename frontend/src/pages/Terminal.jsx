@@ -162,7 +162,7 @@ const Boot = () => {
             <HackerAvatar size={112} className="mx-auto" />
             <div>
               <p className="font-disp text-3xl font-bold tracking-[0.15em] text-white" style={{ textShadow: "0 0 20px rgba(0,255,255,0.5)" }}>CREATED BY KIKI</p>
-              <p className="font-mono text-[10px] tracking-widest text-cyan-400 mt-2">DESIGNER · DEVELOPER · HACKER</p>
+              <p className="font-mono text-[10px] tracking-widest text-cyan-400 mt-2">DESIGNER · DEVELOPER · CREATOR</p>
             </div>
             <div className="flex items-center justify-center gap-1.5 font-mono text-[9px] text-neutral-500 tracking-widest">
               <span className="pulse-dot" />

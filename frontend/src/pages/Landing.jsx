@@ -65,7 +65,7 @@ export default function Landing() {
           <HackerAvatar size={64} />
           <div className="text-center">
             <p className="font-disp text-2xl font-bold tracking-[0.15em] text-neutral-200">CREATED BY KIKI</p>
-            <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-1">DESIGNER · DEVELOPER · HACKER</p>
+            <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-1">DESIGNER · DEVELOPER · CREATOR</p>
           </div>
           <HackerAvatar size={64} />
         </div>

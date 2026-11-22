@@ -19,7 +19,7 @@ const AuthPage = ({ children }) => (
         <HackerAvatar size={56} />
         <div className="text-center">
           <p className="font-disp text-lg font-bold tracking-[0.15em] text-neutral-300">CREATED BY KIKI</p>
-          <p className="font-mono text-[9px] tracking-widest text-neutral-500 mt-1">DESIGNER · DEVELOPER · HACKER</p>
+          <p className="font-mono text-[9px] tracking-widest text-neutral-500 mt-1">DESIGNER · DEVELOPER · CREATOR</p>
         </div>
       </div>
     </div>
