@@ -83,6 +83,7 @@ export function SFProvider({ children }) {
 
   const refreshSnap = useCallback(() => publicGet("/snapshot").then(setSnap).catch(() => toast.error("Could not load the session snapshot")), []);
   useEffect(() => { refreshSnap(); }, [refreshSnap]);
+  usePolling(refreshSnap, 60000);
   const refreshMe = useCallback(() => api.get("/me").then(setMe).catch((e) => toast.error(e.message)), [api]);
   const nt = useNotifications(api, refreshMe);
   useEffect(() => { refreshMe(); }, [refreshMe]);

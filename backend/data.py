@@ -56,13 +56,57 @@ START_CASH = 100000.0
 DEFAULT_WATCH = ["NVDA", "AMD", "TSLA", "META", "SPY"]
 
 
+import math
+import time
+import requests
+
+# ... (existing code) ...
+
+# Live price cache for snapshot tickers
+_snap_price_cache = {"t": 0, "prices": {}}
+_SNAP_TTL = 60
+
+def _fetch_live_ticker_prices():
+    """Fetch live prices for the 10 snapshot tickers from Yahoo Finance."""
+    global _snap_price_cache
+    now = time.time()
+    if _snap_price_cache["prices"] and now - _snap_price_cache["t"] < _SNAP_TTL:
+        return _snap_price_cache["prices"]
+    prices = {}
+    for t in TICKERS:
+        sym = t["sym"]
+        try:
+            r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}", timeout=8, headers={"User-Agent": "Mozilla/5.0 (StockForge)"}, params={"range": "1d", "interval": "5m"})
+            r.raise_for_status()
+            res = r.json()["chart"]["result"][0]
+            meta = res["meta"]
+            price = meta.get("regularMarketPrice")
+            prev = meta.get("previousClose") or meta.get("chartPreviousClose")
+            if price and prev:
+                chg = ((price - prev) / prev * 100)
+                prices[sym] = {"price": round(price, 2), "chg": round(chg, 2)}
+        except Exception:
+            pass
+    if prices:
+        _snap_price_cache = {"t": now, "prices": prices}
+    return prices
+
+
 def snapshot():
+    live = _fetch_live_ticker_prices()
+    tickers = []
+    for t in TICKERS:
+        t = dict(t)  # copy
+        if t["sym"] in live:
+            t["price"] = live[t["sym"]]["price"]
+            t["chg"] = live[t["sym"]]["chg"]
+        tickers.append(t)
     return {
-        "snapshotDate": SNAPSHOT_DATE,
+        "snapshotDate": time.strftime("%b %d, %Y"),
         "tiers": [{k: v for k, v in t.items() if k != "amount_cents"} for t in TIERS],
         "gates": GATES,
         "dashboard": DASHBOARD,
-        "tickers": TICKERS,
+        "tickers": tickers,
         "mag7": MAG7,
         "liveCrypto": LIVE_CRYPTO,
         "liveStocks": LIVE_STOCKS,
@@ -70,5 +114,10 @@ def snapshot():
 
 
 def snapshot_context():
-    rows = [f"{t['sym']} {t['price']} ({t['chg']:+}%) conf {t['conf']} bias {t['bias']} — {t['note']}" for t in TICKERS]
-    return f"Session snapshot {SNAPSHOT_DATE}:\n" + "\n".join(rows) + f"\nIntel: {DASHBOARD['intel']}"
+    live = _fetch_live_ticker_prices()
+    rows = []
+    for t in TICKERS:
+        price = live.get(t["sym"], {}).get("price", t["price"])
+        chg = live.get(t["sym"], {}).get("chg", t["chg"])
+        rows.append(f"{t['sym']} {price} ({chg:+}%) conf {t['conf']} bias {t['bias']} - {t['note']}")
+    return f"Session snapshot {time.strftime('%b %d, %Y')}:\n" + "\n".join(rows) + f"\nIntel: {DASHBOARD['intel']}"
