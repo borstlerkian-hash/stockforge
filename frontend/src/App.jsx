@@ -14,9 +14,12 @@ const AuthPage = ({ children }) => (
     <Background tier={5} />
     <div className="relative z-10 w-full max-w-md">
       {children}
-      <div className="mt-6 flex items-center justify-center gap-2 text-neutral-500 font-mono text-[10px] tracking-widest">
-        <HackerAvatar size={24} />
-        <span>CREATED BY KIKI</span>
+      <div className="mt-8 flex flex-col items-center gap-3">
+        <HackerAvatar size={56} />
+        <div className="text-center">
+          <p className="font-disp text-lg font-bold tracking-[0.15em] text-neutral-300">CREATED BY KIKI</p>
+          <p className="font-mono text-[9px] tracking-widest text-neutral-500 mt-1">DESIGNER · DEVELOPER · HACKER</p>
+        </div>
       </div>
     </div>
   </div>

@@ -60,9 +60,15 @@ export default function Landing() {
         </section>
       </div>
       <InstallDrawer open={install} onOpenChange={setInstall} />
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 pb-8 flex items-center justify-center gap-2 text-neutral-600 font-mono text-[10px] tracking-widest">
-        <HackerAvatar size={20} />
-        <span>CREATED BY KIKI</span>
+      <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 pb-12 flex flex-col items-center gap-3">
+        <div className="flex items-center gap-4">
+          <HackerAvatar size={64} />
+          <div className="text-center">
+            <p className="font-disp text-2xl font-bold tracking-[0.15em] text-neutral-200">CREATED BY KIKI</p>
+            <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-1">DESIGNER · DEVELOPER · HACKER</p>
+          </div>
+          <HackerAvatar size={64} />
+        </div>
       </div>
     </div>
   );
