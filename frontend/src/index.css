@@ -299,3 +299,27 @@ html { -webkit-tap-highlight-color: transparent; }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
 @keyframes rise-up { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes float-up { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-15px); opacity: 0.9; } }
+
+/* ---------- Premium smoothness pass ---------- */
+.sf-panel { transition: border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sf-panel:hover { transform: translate3d(0, -2px, 0); box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset, 0 8px 20px -4px rgba(0,0,0,0.6), 0 24px 48px -12px var(--a-glow); }
+.sf-btn { transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sf-btn:hover { transform: translateY(-1px); box-shadow: 0 0 20px -4px var(--a-glow); }
+.sf-btn:active { transform: scale(0.97); }
+.sf-input { transition: border-color 0.25s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.sf-input:focus { box-shadow: 0 0 0 3px var(--a-soft), 0 0 20px -4px var(--a-glow); }
+.nav-pill { transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.nav-pill:hover { transform: translateY(-1px); }
+.nav-pill:active { transform: scale(0.96); }
+.dock-btn { transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1); }
+.dock-btn:active { transform: scale(0.92); }
+.page-in { animation: page-in 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes page-in { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+tr { transition: background-color 0.15s ease; }
+tr:hover { background-color: rgba(255, 255, 255, 0.04); }
+.recharts-tooltip-wrapper { transition: opacity 0.15s ease; }
+@media (max-width: 640px) {
+  .sf-btn { min-height: 40px; }
+  button, a { touch-action: manipulation; }
+  html, body { overflow-x: hidden; }
+}
