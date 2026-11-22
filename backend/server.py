@@ -480,6 +480,10 @@ app.include_router(build_site_router(require_admin))
 app.include_router(build_agent_router(require_admin))
 app.include_router(digest_router)
 
+# Lightweight health check (used by uptime monitors / keep-alive pings).
+@app.get("/api/health", include_in_schema=False)
+async def health():
+    return {"ok": True, "service": "stockforge"}
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
