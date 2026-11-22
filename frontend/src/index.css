@@ -300,7 +300,63 @@ html { -webkit-tap-highlight-color: transparent; }
 @keyframes rise-up { from { transform: scaleY(0); } to { transform: scaleY(1); } }
 @keyframes float-up { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-15px); opacity: 0.9; } }
 
-/* ---------- Premium smoothness pass ---------- */
+/* ---------- Premium micro-interactions ---------- */
+.sf-panel { will-change: transform; }
+.sf-panel:hover { transform: translate3d(0, -3px, 0) scale(1.003); box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset, 0 12px 24px -6px rgba(0,0,0,0.7), 0 32px 64px -16px var(--a-glow), 0 0 60px -12px var(--a-glow); }
+
+/* Smooth header on scroll */
+header.sticky { transition: background-color 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease; }
+header.sticky.scrolled { background: rgba(8, 11, 17, 0.95); box-shadow: 0 4px 20px rgba(0,0,0,0.4); border-bottom-color: var(--a-line); }
+
+/* Premium button press */
+.sf-btn { position: relative; overflow: hidden; }
+.sf-btn::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle at var(--x, 50%) var(--y, 50%), rgba(255,255,255,0.15) 0%, transparent 60%); opacity: 0; transition: opacity 0.3s ease; pointer-events: none; }
+.sf-btn:active::after { opacity: 1; transition: opacity 0.1s ease; }
+
+/* Smooth number transitions */
+.tabular-nums { font-variant-numeric: tabular-nums; transition: color 0.3s ease, transform 0.2s ease; }
+
+/* Premium card entrance */
+.sf-panel { animation: panel-in 0.4s cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+@keyframes panel-in { from { opacity: 0; transform: translateY(12px) scale(0.98); } to { opacity: 1; transform: none; } }
+
+/* Smooth focus rings */
+:focus-visible { outline: 2px solid var(--a); outline-offset: 2px; border-radius: 4px; }
+
+/* Premium scrollbar */
+::-webkit-scrollbar { width: 8px; height: 8px; }
+::-webkit-scrollbar-thumb { background: linear-gradient(180deg, var(--a-line), var(--a)); border-radius: 4px; }
+::-webkit-scrollbar-thumb:hover { background: var(--a); box-shadow: 0 0 8px var(--a-glow); }
+::-webkit-scrollbar-track { background: rgba(0,0,0,0.2); }
+
+/* Smooth dock button press */
+.dock-btn { position: relative; overflow: hidden; }
+.dock-btn::after { content: ""; position: absolute; inset: 0; background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%); opacity: 0; transition: opacity 0.2s ease; pointer-events: none; }
+.dock-btn:active::after { opacity: 1; }
+
+/* Premium mobile nav */
+.mobile-dock { box-shadow: 0 -8px 32px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.03) inset; }
+.mobile-dock::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 1px; background: linear-gradient(90deg, transparent, var(--a), transparent); opacity: 0.5; }
+
+/* Smooth transitions for all */
+* { transition-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1); }
+
+/* Better loading shimmer */
+.sk::after { background: linear-gradient(90deg, transparent, rgba(0,255,255,0.08), transparent); animation: sk-sweep 1.2s ease-in-out infinite; }
+
+/* Premium ticker tape */
+.tape-track { animation: tape 80s linear infinite; }
+.tape:hover .tape-track { animation-play-state: paused; }
+
+/* Smooth card hover glow */
+.sf-hover:hover { box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset, 0 8px 24px -4px rgba(0,0,0,0.6), 0 32px 64px -16px var(--a-glow), 0 0 48px -8px var(--a-glow); transform: translate3d(0, -3px, 0) scale(1.008); }
+
+@media (max-width: 640px) {
+  .sf-btn { min-height: 44px; padding: 10px 14px; }
+  .dock-btn { min-height: 52px; }
+  html, body { overflow-x: hidden; }
+  button, a { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+}
 .sf-panel { transition: border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .sf-panel:hover { transform: translate3d(0, -2px, 0); box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset, 0 8px 20px -4px rgba(0,0,0,0.6), 0 24px 48px -12px var(--a-glow); }
 .sf-btn { transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1); }
