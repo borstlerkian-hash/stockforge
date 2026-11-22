@@ -281,3 +281,5 @@ html { -webkit-tap-highlight-color: transparent; }
 @keyframes glitch-shift { 0% { transform: translateX(-4px); } 50% { transform: translateX(4px); } 100% { transform: translateX(-4px); } }
 .animate-fade-in { animation: fade-in 0.3s ease both; }
 @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+@keyframes rise-up { from { transform: scaleY(0); } to { transform: scaleY(1); } }
+@keyframes float-up { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-15px); opacity: 0.9; } }

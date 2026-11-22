@@ -83,43 +83,61 @@ const Boot = () => {
     timers.push(setTimeout(() => setStage(1), 300));
     timers.push(setTimeout(() => setStage(2), 1200));
     timers.push(setTimeout(() => setStage(3), 2200));
-    timers.push(setTimeout(() => setShowCredit(true), 1800));
-    // Glitch effect on title
-    timers.push(setTimeout(() => setGlitch(true), 1000));
-    timers.push(setTimeout(() => setGlitch(false), 1150));
-    timers.push(setTimeout(() => setGlitch(true), 2800));
-    timers.push(setTimeout(() => setGlitch(false), 2950));
-    timers.push(setTimeout(() => setLeaving(true), 6500));
-    timers.push(setTimeout(() => { try { sessionStorage.setItem("sf_booted", "1"); } catch { /* ignore */ } setShow(false); }, 7200));
+    timers.push(setTimeout(() => setShowCredit(true), 1500));
+    timers.push(setTimeout(() => setGlitch(true), 900));
+    timers.push(setTimeout(() => setGlitch(false), 1050));
+    timers.push(setTimeout(() => setGlitch(true), 2600));
+    timers.push(setTimeout(() => setGlitch(false), 2750));
+    timers.push(setTimeout(() => setLeaving(true), 7500));
+    timers.push(setTimeout(() => { try { sessionStorage.setItem("sf_booted", "1"); } catch { /* ignore */ } setShow(false); }, 8200));
     return () => timers.forEach(clearTimeout);
   }, [show]);
   if (!show) return null;
   const siteName = (() => { try { return JSON.parse(localStorage.getItem("sf_site_name") || "null"); } catch { return null; } })() || "STOCKFORGE";
+  const stocks = ["AAPL", "TSLA", "NVDA", "MSFT", "GOOGL", "AMZN", "META", "BTC", "ETH", "SPY"];
   return (
     <>
       <div className={`fixed inset-0 z-[100] bg-[#050510] grid place-items-center overflow-hidden ${leaving ? "boot-out" : ""}`} data-testid="boot-screen">
-        {/* Matrix rain background - denser */}
+        {/* Matrix rain background */}
         <div className="absolute inset-0 opacity-20 pointer-events-none">
           {Array.from({ length: 24 }).map((_, i) => (
             <div key={i} className="absolute top-0 font-mono text-[10px] text-green-400/50 leading-none" style={{ left: (i * 4.2) + "%", animation: "matrix-rain " + (2 + (i % 4) * 0.5) + "s linear infinite", animationDelay: ((i * 0.3) % 2) + "s" }}>
               {Array.from({ length: 20 }).map((_, j) => (
-                <div key={j} style={{ opacity: Math.random() * 0.6 + 0.2 }}>{String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))}</div>
+                <div key={j} style={{ opacity: Math.random() * 0.5 + 0.2 }}>{String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))}</div>
               ))}
             </div>
           ))}
         </div>
         {/* Scan line */}
         <div className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/60 to-transparent pointer-events-none" style={{ animation: "scan-line 2.5s linear infinite" }} />
-        {/* Horizontal glitch lines */}
+        {/* Glitch lines */}
         {glitch && (
           <div className="absolute inset-0 pointer-events-none z-[102]">
             <div className="absolute inset-x-0 h-1 bg-cyan-400/20" style={{ top: "30%", animation: "glitch-shift 0.15s steps(2) infinite" }} />
             <div className="absolute inset-x-0 h-1 bg-red-400/10" style={{ top: "60%", animation: "glitch-shift 0.1s steps(2) infinite reverse" }} />
           </div>
         )}
+        {/* Rising stock candlesticks */}
+        <div className="absolute bottom-0 inset-x-0 h-32 pointer-events-none opacity-30">
+          {Array.from({ length: 20 }).map((_, i) => {
+            const h = 20 + Math.random() * 80;
+            const isGreen = Math.random() > 0.4;
+            return (
+              <div key={i} className="absolute bottom-0" style={{ left: (i * 5 + 2) + "%", width: "3%", height: h + "px", background: isGreen ? "rgba(16,185,129,0.6)" : "rgba(239,68,68,0.6)", animation: "rise-up " + (1.5 + Math.random()) + "s ease-out forwards", animationDelay: (i * 0.08) + "s", transformOrigin: "bottom" }} />
+            );
+          })}
+        </div>
+        {/* Floating price numbers */}
+        <div className="absolute inset-0 pointer-events-none overflow-hidden">
+          {stocks.map((s, i) => (
+            <div key={s} className="absolute font-mono text-[10px] text-cyan-400/30" style={{ left: (10 + i * 9) + "%", top: (20 + (i % 4) * 15) + "%", animation: "float-up " + (3 + i * 0.5) + "s ease-in-out infinite", animationDelay: (i * 0.4) + "s" }}>
+              {s} {Math.random() > 0.5 ? "+" : "-"}{(Math.random() * 5).toFixed(2)}%
+            </div>
+          ))}
+        </div>
         <div className="relative z-10 w-80 text-center space-y-5">
-          <div className="relative mx-auto w-28 h-28">
-            <div className="absolute inset-0 rounded-full blur-2xl opacity-70 animate-pulse" style={{ background: "var(--a)" }} />
+          <div className="relative mx-auto w-24 h-24">
+            <div className="absolute inset-0 rounded-full blur-2xl opacity-60 animate-pulse" style={{ background: "var(--a)" }} />
             <svg viewBox="0 0 64 64" className="relative w-full h-full" style={{ animation: "spin 3s linear infinite" }}>
               <polygon points="32,4 58,18 58,46 32,60 6,46 6,18" fill="none" stroke="var(--a)" strokeWidth="2" opacity="0.9" />
               <polygon points="32,12 50,22 50,42 32,52 14,42 14,22" fill="none" stroke="var(--a)" strokeWidth="1" opacity="0.4" />
@@ -127,7 +145,7 @@ const Boot = () => {
                 <animate attributeName="r" values="4;12;4" dur="1.5s" repeatCount="indefinite" />
               </circle>
               <circle cx="32" cy="32" r="3" fill="#ffffff" opacity="0.95">
-                <animate attributeName="opacity" values="0.4;1;0.4" dur="1s" repeatCount="indefinite" />
+                <animate attributeName="opacity" values="0.5;1;0.5" dur="1.2s" repeatCount="indefinite" />
               </circle>
             </svg>
           </div>
@@ -144,31 +162,58 @@ const Boot = () => {
               <span key={s} className={`font-mono text-[9px] tracking-widest px-2 py-0.5 rounded border transition-all duration-300 ${stage > i ? "border-cyan-400/40 text-cyan-400 bg-cyan-400/10 shadow-[0_0_8px_rgba(0,255,255,0.2)]" : "border-white/10 text-neutral-600"}`}>{s}</span>
             ))}
           </div>
-          {/* Made by Kiki - visible during loading */}
           <div className={`flex items-center justify-center gap-2 mt-4 transition-all duration-700 ${stage >= 1 ? "opacity-100" : "opacity-0"}`}>
             <HackerAvatar size={32} />
             <span className="font-mono text-[9px] tracking-widest text-neutral-500">CREATED BY KIKI</span>
           </div>
         </div>
       </div>
-      {/* Made by Kiki popup - appears during loading */}
+      {/* Made by Kiki full-screen popup - appears during loading */}
       {showCredit && (
-        <div className={`fixed inset-0 z-[101] flex items-center justify-center bg-black/60 backdrop-blur-md transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`}>
-          <div className={`relative bg-[#0a0a14]/95 border border-cyan-500/30 rounded-2xl p-8 max-w-sm w-full mx-4 text-center space-y-4 shadow-[0_0_80px_rgba(0,255,255,0.2)] transition-all duration-500 ${leaving ? "scale-95 opacity-0" : "scale-100 opacity-100"}`}>
-            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+        <div className={`fixed inset-0 z-[101] flex items-center justify-center bg-black/80 backdrop-blur-xl transition-opacity duration-700 ${leaving ? "opacity-0" : "opacity-100"}`}>
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {/* Rising candlesticks */}
+            {Array.from({ length: 24 }).map((_, i) => {
+              const h = 30 + Math.random() * 120;
+              const isGreen = Math.random() > 0.35;
+              return (
+                <div key={i} className="absolute bottom-0" style={{ left: (i * 4.2 + 1) + "%", width: "2.5%", height: h + "px", background: isGreen ? "linear-gradient(to top, rgba(16,185,129,0.8), rgba(16,185,129,0.2))" : "linear-gradient(to top, rgba(239,68,68,0.8), rgba(239,68,68,0.2))", animation: "rise-up " + (1.2 + Math.random() * 0.8) + "s ease-out forwards", animationDelay: (i * 0.06) + "s", transformOrigin: "bottom", borderRadius: "2px 2px 0 0" }} />
+              );
+            })}
+            {/* Floating price tags */}
+            {stocks.map((s, i) => (
+              <div key={s} className="absolute font-mono text-[11px] font-bold" style={{ left: (8 + i * 9) + "%", top: (15 + (i % 5) * 12) + "%", color: Math.random() > 0.4 ? "#10B981" : "#EF4444", animation: "float-up " + (4 + i * 0.3) + "s ease-in-out infinite", animationDelay: (i * 0.5) + "s", textShadow: "0 0 8px currentColor", opacity: 0.7 }}>
+                {s} {Math.random() > 0.4 ? "+" : "-"}{(Math.random() * 8).toFixed(2)}%
+              </div>
+            ))}
+            {/* Matrix rain overlay */}
+            <div className="absolute inset-0 opacity-10">
+              {Array.from({ length: 12 }).map((_, i) => (
+                <div key={i} className="absolute top-0 font-mono text-[8px] text-green-400/60 leading-none" style={{ left: (i * 8.5) + "%", animation: "matrix-rain " + (3 + (i % 3)) + "s linear infinite", animationDelay: (i * 0.5) + "s" }}>
+                  {Array.from({ length: 12 }).map((_, j) => (
+                    <div key={j}>{String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))}</div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          </div>
+          <div className={`relative bg-[#0a0a14]/90 border border-cyan-500/40 rounded-3xl p-10 max-w-md w-full mx-4 text-center space-y-5 shadow-[0_0_100px_rgba(0,255,255,0.25)] transition-all duration-700 ${leaving ? "scale-90 opacity-0" : "scale-100 opacity-100"}`}>
+            <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
               <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 via-transparent to-cyan-500/5" />
               <div className="absolute inset-0" style={{ background: "repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,255,255,0.03) 2px, rgba(0,255,255,0.03) 4px)" }} />
             </div>
-            <HackerAvatar size={112} className="mx-auto" />
-            <div>
-              <p className="font-disp text-3xl font-bold tracking-[0.15em] text-white" style={{ textShadow: "0 0 20px rgba(0,255,255,0.5)" }}>CREATED BY KIKI</p>
-              <p className="font-mono text-[10px] tracking-widest text-cyan-400 mt-2">DESIGNER · DEVELOPER · CREATOR</p>
+            <div className="relative">
+              <HackerAvatar size={128} className="mx-auto" />
             </div>
-            <div className="flex items-center justify-center gap-1.5 font-mono text-[9px] text-neutral-500 tracking-widest">
+            <div className="relative">
+              <p className="font-disp text-4xl font-bold tracking-[0.15em] text-white" style={{ textShadow: "0 0 30px rgba(0,255,255,0.6), 0 0 60px rgba(0,255,255,0.3)" }}>CREATED BY KIKI</p>
+              <p className="font-mono text-[11px] tracking-widest text-cyan-400 mt-3">DESIGNER · DEVELOPER · CREATOR</p>
+            </div>
+            <div className="relative flex items-center justify-center gap-2 font-mono text-[10px] text-neutral-500 tracking-widest">
               <span className="pulse-dot" />
-              <span>INITIALIZING NEURAL TERMINAL</span>
+              <span>BUILDING THE FUTURE OF TRADING</span>
             </div>
-            <div className="boot-bar h-[2px] bg-white/5 overflow-hidden rounded-full"><i className="block h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400" style={{ animation: "boot 2.5s ease forwards" }} /></div>
+            <div className="relative boot-bar h-[2px] bg-white/5 overflow-hidden rounded-full"><i className="block h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400" style={{ animation: "boot 3s ease forwards" }} /></div>
           </div>
         </div>
       )}
@@ -195,7 +240,6 @@ const Shell = () => {
   const [install, setInstall] = useState(false);
   const [bell, setBell] = useState(false);
   const [showTop, setShowTop] = useState(false);
-  const [pulling, setPulling] = useState(false);
   const pages = useNavPages();
   const site = useSite().data?.settings;
 
@@ -205,37 +249,7 @@ const Shell = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Pull-to-refresh on mobile (only triggers on a deliberate downward pull)
-  useEffect(() => {
-    let startY = 0;
-    let pulling = false;
-    let triggered = false;
-    const onTouchStart = (e) => {
-      if (window.scrollY <= 5) { startY = e.touches[0].clientY; pulling = true; triggered = false; }
-    };
-    const onTouchMove = (e) => {
-      if (!pulling) return;
-      const dy = e.touches[0].clientY - startY;
-      if (dy > 80) { setPulling(true); triggered = true; }
-      else if (dy < 10) { setPulling(false); triggered = false; }
-    };
-    const onTouchEnd = () => {
-      if (pulling && triggered && window.scrollY <= 5) {
-        window.location.reload();
-      }
-      pulling = false;
-      triggered = false;
-      setPulling(false);
-    };
-    window.addEventListener("touchstart", onTouchStart, { passive: true });
-    window.addEventListener("touchmove", onTouchMove, { passive: true });
-    window.addEventListener("touchend", onTouchEnd);
-    return () => {
-      window.removeEventListener("touchstart", onTouchStart);
-      window.removeEventListener("touchmove", onTouchMove);
-      window.removeEventListener("touchend", onTouchEnd);
-    };
-  }, []);
+
 
   useEffect(() => {
     const onKey = (e) => {
@@ -281,13 +295,6 @@ const Shell = () => {
           >
             <ArrowUp size={16} />
           </button>
-        )}
-        {pulling && (
-          <div className="lg:hidden fixed top-0 inset-x-0 z-50 flex justify-center pt-2 pointer-events-none">
-            <div className="bg-[#0D131F]/90 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 font-mono text-xs text-neutral-300 animate-pulse">
-              Release to refresh
-            </div>
-          </div>
         )}
       </div>
       <CommandPalette open={cmd} onOpenChange={setCmd} onInstall={() => setInstall(true)} />
