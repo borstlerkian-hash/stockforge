@@ -205,22 +205,26 @@ const Shell = () => {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Pull-to-refresh on mobile
+  // Pull-to-refresh on mobile (only triggers on a deliberate downward pull)
   useEffect(() => {
     let startY = 0;
     let pulling = false;
-    const onTouchStart = (e) => { if (window.scrollY === 0) { startY = e.touches[0].clientY; pulling = true; } };
+    let triggered = false;
+    const onTouchStart = (e) => {
+      if (window.scrollY <= 5) { startY = e.touches[0].clientY; pulling = true; triggered = false; }
+    };
     const onTouchMove = (e) => {
       if (!pulling) return;
       const dy = e.touches[0].clientY - startY;
-      if (dy > 60) { setPulling(true); }
+      if (dy > 80) { setPulling(true); triggered = true; }
+      else if (dy < 10) { setPulling(false); triggered = false; }
     };
     const onTouchEnd = () => {
-      if (pulling && window.scrollY === 0) {
-        // trigger refresh
+      if (pulling && triggered && window.scrollY <= 5) {
         window.location.reload();
       }
       pulling = false;
+      triggered = false;
       setPulling(false);
     };
     window.addEventListener("touchstart", onTouchStart, { passive: true });

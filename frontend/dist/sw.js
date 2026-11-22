@@ -1,4 +1,4 @@
-const CACHE = "stockforge-v2";
+const CACHE = "stockforge-v3";
 const SHELL = ["/", "/manifest.json", "/icon-192.png", "/icon-512.png"];
 
 self.addEventListener("install", (e) => {
