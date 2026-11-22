@@ -72,7 +72,7 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
   const pages = useNavPages();
   const site = useSite().data?.settings;
   return (
-    <header className="sticky top-0 z-40 backdrop-blur-xl bg-[#080B11]/85 border-b border-white/[0.06]" style={{ paddingTop: "env(safe-area-inset-top)" }}>
+    <header className="sticky top-0 z-40 bg-[#080B11]/95 border-b border-white/[0.06] sm:backdrop-blur-xl sm:bg-[#080B11]/85" style={{ paddingTop: "env(safe-area-inset-top)" }}>
       <div className="max-w-[1600px] mx-auto flex items-center gap-2 sm:gap-4 px-3 sm:px-4 lg:px-8 h-14 sm:h-16">
         <button className="flex items-center gap-3 shrink-0" onClick={() => setPage("home")} data-testid="brand-home-button">
           <span className="relative w-8 h-8 grid place-items-center">

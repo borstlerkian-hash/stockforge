@@ -100,9 +100,9 @@ const Boot = () => {
       <div className={`fixed inset-0 z-[100] bg-[#030308] overflow-hidden ${leaving ? "boot-out" : ""}`} data-testid="boot-screen">
         {/* Matrix rain - optimized */}
         <div className="absolute inset-0 opacity-12 pointer-events-none will-change-transform">
-          {Array.from({ length: 14 }).map((_, i) => (
-            <div key={i} className="absolute top-0 font-mono text-[9px] text-green-400/40 leading-none" style={{ left: (i * 7.2) + "%", animation: "matrix-rain " + (2 + (i % 3) * 0.5) + "s linear infinite", animationDelay: ((i * 0.3) % 2) + "s" }}>
-              {Array.from({ length: 12 }).map((_, j) => (
+          {Array.from({ length: 10 }).map((_, i) => (
+            <div key={i} className="absolute top-0 font-mono text-[9px] text-green-400/40 leading-none" style={{ left: (i * 10) + "%", animation: "matrix-rain " + (2.5 + (i % 3) * 0.5) + "s linear infinite", animationDelay: ((i * 0.4) % 2) + "s", willChange: "transform" }}>
+              {Array.from({ length: 8 }).map((_, j) => (
                 <div key={j} style={{ opacity: Math.random() * 0.5 + 0.2 }}>{String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))}</div>
               ))}
             </div>
@@ -123,7 +123,7 @@ const Boot = () => {
         </div>
         {/* Floating price tags */}
         <div className="absolute inset-0 pointer-events-none overflow-hidden">
-          {stocks.map((s, i) => (
+          {stocks.slice(0, 8).map((s, i) => (
             <div key={s} className="absolute font-mono text-[11px] font-bold" style={{ left: (5 + i * 8) + "%", top: (12 + (i % 5) * 14) + "%", color: Math.random() > 0.4 ? "#10B981" : "#EF4444", animation: "float-up " + (3.5 + i * 0.4) + "s ease-in-out infinite", animationDelay: (i * 0.3) + "s", textShadow: "0 0 10px currentColor", opacity: 0.6 }}>
               {s} {Math.random() > 0.4 ? "+" : "-"}{(Math.random() * 8).toFixed(2)}%
             </div>
@@ -176,7 +176,7 @@ const Boot = () => {
         <div className={`fixed inset-0 z-[101] flex items-center justify-center bg-black/75 backdrop-blur-xl transition-opacity duration-700 ${leaving ? "opacity-0" : "opacity-100"}`}>
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
             {/* Rising candlesticks */}
-            {Array.from({ length: 28 }).map((_, i) => {
+            {Array.from({ length: 16 }).map((_, i) => {
               const h = 30 + Math.random() * 140;
               const isGreen = Math.random() > 0.35;
               return (
@@ -184,14 +184,14 @@ const Boot = () => {
               );
             })}
             {/* Floating price tags */}
-            {stocks.map((s, i) => (
+            {stocks.slice(0, 8).map((s, i) => (
               <div key={s} className="absolute font-mono text-[11px] font-bold" style={{ left: (6 + i * 8) + "%", top: (10 + (i % 6) * 12) + "%", color: Math.random() > 0.4 ? "#10B981" : "#EF4444", animation: "float-up " + (4 + i * 0.3) + "s ease-in-out infinite", animationDelay: (i * 0.4) + "s", textShadow: "0 0 12px currentColor", opacity: 0.7 }}>
                 {s} {Math.random() > 0.4 ? "+" : "-"}{(Math.random() * 8).toFixed(2)}%
               </div>
             ))}
             {/* Matrix rain overlay */}
             <div className="absolute inset-0 opacity-8">
-              {Array.from({ length: 10 }).map((_, i) => (
+              {Array.from({ length: 6 }).map((_, i) => (
                 <div key={i} className="absolute top-0 font-mono text-[8px] text-green-400/50 leading-none" style={{ left: (i * 10) + "%", animation: "matrix-rain " + (3 + (i % 3)) + "s linear infinite", animationDelay: (i * 0.5) + "s" }}>
                   {Array.from({ length: 12 }).map((_, j) => (
                     <div key={j}>{String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))}</div>
