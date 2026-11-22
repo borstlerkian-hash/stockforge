@@ -185,22 +185,6 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
                 </p>
               </div>
             )}
-            {/* Quick summary */}
-            {p && (
-              <div className="px-5 py-3 border-b border-[#1E293B] bg-[#07090E]/40">
-                <p className="font-mono text-xs text-slate-300 leading-relaxed">
-                  <span style={{ color: sigCol }} className="font-bold">{sig}</span>
-                  <span className="text-neutral-500">{"  |  "}</span>
-                  <span className="text-white">{fmtPrice(p.price)}</span>
-                  <span className="text-neutral-500">{" -> "}</span>
-                  <span style={{ color: C.avg }}>{fmtPrice(p.scenarios.base.price)}</span>
-                  <span className="text-neutral-500">{" avg over "}{p.tf_label.toLowerCase()}</span>
-                  <span className="text-neutral-500">{"  |  "}</span>
-                  <span style={{ color: C.best }}>{fmtProb(p.probabilities.up)}</span>
-                  <span className="text-neutral-500"> chance of closing higher</span>
-                </p>
-              </div>
-            )}
             {/* timeframe + toggles */}
             <div className="flex flex-wrap items-center gap-2 px-5 py-3 border-b border-[#1E293B] bg-[#07090E]/60">
               <div className="flex gap-1" role="tablist" aria-label="Forecast timeframe">
