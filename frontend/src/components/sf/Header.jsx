@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Home, BarChart3, LayoutDashboard, Bot, Star, MoreHorizontal, Download, Search, Wifi, WifiOff } from "lucide-react";
+import { Home, BarChart3, LayoutDashboard, Bot, Star, MoreHorizontal, Download, Search, Wifi, WifiOff, ArrowDownUp, Activity, Eye, Brain, Wallet, Crown, Shield, TrendingUp, Zap, Target } from "lucide-react";
 import { UserButton } from "@clerk/react";
 import { useSF } from "@/context/SFContext";
 import { PAGES, pct, priceFmt } from "@/lib/theme";
@@ -115,7 +115,7 @@ export const MobileNav = () => {
   const [more, setMore] = useState(false);
   // Primary tabs shown directly in the dock; the rest live behind "More".
 const ICONS = { home: Home, markets: BarChart3, dash: LayoutDashboard, ai: Bot, watch: Star };
-  const PRIMARY = ["home", "markets", "dash", "ai", "watch"];
+const MORE_ICONS = { markets: BarChart3, dash: LayoutDashboard, quotes: TrendingUp, live: Activity, scan: Zap, watch: Eye, ai: Bot, trade: ArrowDownUp, tiers: Crown, admin: Shield };
   const primary = pages.filter((p) => PRIMARY.includes(p.id));
   const rest = pages.filter((p) => !PRIMARY.includes(p.id));
   return (
@@ -149,10 +149,16 @@ const ICONS = { home: Home, markets: BarChart3, dash: LayoutDashboard, ai: Bot, 
               <button className="sf-btn sf-btn-sm" onClick={() => setMore(false)} data-testid="mobile-more-close">Close</button>
             </div>
             <div className="grid grid-cols-3 gap-2">
-              {rest.map((p) => (
-                <button key={p.id} onClick={() => { setPage(p.id); setMore(false); }} data-testid={`mobile-more-${p.id}`}
-                  className={`dock-btn !py-3 ${page === p.id ? "dock-btn-on" : ""}`}>{p.label}</button>
-              ))}
+              {rest.map((p) => {
+                const Icon = MORE_ICONS[p.id];
+                return (
+                  <button key={p.id} onClick={() => { setPage(p.id); setMore(false); }} data-testid={`mobile-more-${p.id}`}
+                    className={`dock-btn !py-3 !min-h-[52px] flex flex-col items-center gap-1 ${page === p.id ? "dock-btn-on" : ""}`}>
+                    {Icon && <Icon size={18} />}
+                    <span className="text-[8px] leading-none">{p.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
         </div>
