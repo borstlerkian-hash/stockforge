@@ -116,6 +116,7 @@ export const MobileNav = () => {
   // Primary tabs shown directly in the dock; the rest live behind "More".
 const ICONS = { home: Home, markets: BarChart3, dash: LayoutDashboard, ai: Bot, watch: Star };
 const MORE_ICONS = { markets: BarChart3, dash: LayoutDashboard, quotes: TrendingUp, live: Activity, scan: Zap, watch: Eye, ai: Bot, trade: ArrowDownUp, tiers: Crown, admin: Shield };
+const PRIMARY = ["home", "markets", "dash", "ai", "watch"];
   const primary = pages.filter((p) => PRIMARY.includes(p.id));
   const rest = pages.filter((p) => !PRIMARY.includes(p.id));
   return (
