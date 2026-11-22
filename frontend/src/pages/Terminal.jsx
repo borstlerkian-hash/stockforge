@@ -126,6 +126,7 @@ const Shell = () => {
   const [install, setInstall] = useState(false);
   const [bell, setBell] = useState(false);
   const [showTop, setShowTop] = useState(false);
+  const [pulling, setPulling] = useState(false);
   const pages = useNavPages();
   const site = useSite().data?.settings;
 
@@ -133,6 +134,34 @@ const Shell = () => {
     const onScroll = () => setShowTop(window.scrollY > 600);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Pull-to-refresh on mobile
+  useEffect(() => {
+    let startY = 0;
+    let pulling = false;
+    const onTouchStart = (e) => { if (window.scrollY === 0) { startY = e.touches[0].clientY; pulling = true; } };
+    const onTouchMove = (e) => {
+      if (!pulling) return;
+      const dy = e.touches[0].clientY - startY;
+      if (dy > 60) { setPulling(true); }
+    };
+    const onTouchEnd = () => {
+      if (pulling && window.scrollY === 0) {
+        // trigger refresh
+        window.location.reload();
+      }
+      pulling = false;
+      setPulling(false);
+    };
+    window.addEventListener("touchstart", onTouchStart, { passive: true });
+    window.addEventListener("touchmove", onTouchMove, { passive: true });
+    window.addEventListener("touchend", onTouchEnd);
+    return () => {
+      window.removeEventListener("touchstart", onTouchStart);
+      window.removeEventListener("touchmove", onTouchMove);
+      window.removeEventListener("touchend", onTouchEnd);
+    };
   }, []);
 
   useEffect(() => {
@@ -179,6 +208,13 @@ const Shell = () => {
           >
             <ArrowUp size={16} />
           </button>
+        )}
+        {pulling && (
+          <div className="lg:hidden fixed top-0 inset-x-0 z-50 flex justify-center pt-2 pointer-events-none">
+            <div className="bg-[#0D131F]/90 backdrop-blur-sm border border-white/10 rounded-full px-4 py-2 font-mono text-xs text-neutral-300 animate-pulse">
+              Release to refresh
+            </div>
+          </div>
         )}
       </div>
       <CommandPalette open={cmd} onOpenChange={setCmd} onInstall={() => setInstall(true)} />
