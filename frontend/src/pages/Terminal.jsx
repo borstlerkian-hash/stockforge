@@ -184,6 +184,7 @@ const Boot = () => {
           </div>
         </div>
       )}
+    </div>
   );
 };
 
