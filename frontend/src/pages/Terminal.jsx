@@ -75,98 +75,115 @@ const Boot = () => {
   const [show, setShow] = useState(() => { try { return !sessionStorage.getItem("sf_booted"); } catch { return false; } });
   const [leaving, setLeaving] = useState(false);
   const [stage, setStage] = useState(0);
-  const [showCredit, setShowCredit] = useState(false);
+  const [showCredit, setShowCredit] = useState(true);
   useEffect(() => {
     if (!show) return;
     const timers = [];
-    timers.push(setTimeout(() => setStage(1), 300));
-    timers.push(setTimeout(() => setStage(2), 900));
-    timers.push(setTimeout(() => setStage(3), 1600));
-    timers.push(setTimeout(() => setShowCredit(true), 2000));
-    timers.push(setTimeout(() => setLeaving(true), 4500));
-    timers.push(setTimeout(() => { try { sessionStorage.setItem("sf_booted", "1"); } catch { /* ignore */ } setShow(false); }, 5200));
+    timers.push(setTimeout(() => setStage(1), 200));
+    timers.push(setTimeout(() => setStage(2), 800));
+    timers.push(setTimeout(() => setStage(3), 1400));
+    timers.push(setTimeout(() => setLeaving(true), 3800));
+    timers.push(setTimeout(() => { try { sessionStorage.setItem("sf_booted", "1"); } catch { /* ignore */ } setShow(false); }, 4400));
     return () => timers.forEach(clearTimeout);
   }, [show]);
   if (!show) return null;
   const siteName = (() => { try { return JSON.parse(localStorage.getItem("sf_site_name") || "null"); } catch { return null; } })() || "STOCKFORGE";
   return (
-    <>
-      <div className={`fixed inset-0 z-[100] bg-[#050510] grid place-items-center overflow-hidden ${leaving ? "boot-out" : ""}`} data-testid="boot-screen">
-        {/* Simple matrix rain - reduced */}
-        <div className="absolute inset-0 opacity-10 pointer-events-none">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <div key={i} className="absolute top-0 font-mono text-[10px] text-green-400/40 leading-none" style={{ left: (i * 12.5) + "%", animation: "matrix-rain " + (3 + (i % 3)) + "s linear infinite", animationDelay: (i * 0.5) + "s", willChange: "transform" }}>
-              {Array.from({ length: 8 }).map((_, j) => (
-                <div key={j} style={{ opacity: 0.3 }}>{String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))}</div>
-              ))}
-            </div>
-          ))}
-        </div>
-        {/* Scan line */}
-        <div className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent pointer-events-none" style={{ animation: "scan-line 3s linear infinite" }} />
-        {/* Rising candlesticks - reduced */}
-        <div className="absolute bottom-0 inset-x-0 h-24 pointer-events-none opacity-30">
-          {Array.from({ length: 12 }).map((_, i) => {
-            const h = 20 + Math.random() * 60;
-            const isGreen = Math.random() > 0.4;
-            return (
-              <div key={i} className="absolute bottom-0" style={{ left: (i * 8.3 + 2) + "%", width: "2%", height: h + "px", background: isGreen ? "rgba(16,185,129,0.5)" : "rgba(239,68,68,0.5)", animation: "rise-up " + (1 + Math.random() * 0.5) + "s ease-out forwards", animationDelay: (i * 0.06) + "s", transformOrigin: "bottom", borderRadius: "1px 1px 0 0" }} />
-            );
-          })}
-        </div>
-        <div className="relative z-10 w-80 text-center space-y-5">
-          <div className="relative mx-auto w-24 h-24">
-            <div className="absolute inset-0 rounded-full blur-2xl opacity-50 animate-pulse" style={{ background: "var(--a)" }} />
-            <svg viewBox="0 0 64 64" className="relative w-full h-full" style={{ animation: "spin 4s linear infinite" }}>
-              <polygon points="32,4 58,18 58,46 32,60 6,46 6,18" fill="none" stroke="var(--a)" strokeWidth="2" opacity="0.8" />
-              <circle cx="32" cy="32" r="6" fill="var(--a)" opacity="0.9">
-                <animate attributeName="r" values="4;10;4" dur="1.5s" repeatCount="indefinite" />
-              </circle>
-              <circle cx="32" cy="32" r="3" fill="#ffffff" opacity="0.9">
-                <animate attributeName="opacity" values="0.5;1;0.5" dur="1.2s" repeatCount="indefinite" />
-              </circle>
-            </svg>
-          </div>
-          <div className={`transition-all duration-700 ${stage >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
-            <p className="font-disp text-4xl font-bold tracking-[0.2em] text-white">{siteName}</p>
-            <p className="font-mono text-[10px] tracking-[0.35em] accent mt-1">NEURAL TERMINAL · v3</p>
-          </div>
-          <div className={`transition-all duration-500 ${stage >= 2 ? "opacity-100" : "opacity-0"}`}>
-            <p className="font-mono text-xs text-neutral-400 mt-2 caret">{stage >= 3 ? "systems online" : "linking market feeds"}</p>
-            <div className="boot-bar h-[2px] bg-white/5 mt-3 overflow-hidden rounded-full"><i className="block h-full bg-gradient-to-r from-cyan-400 to-blue-500" style={{ animation: "boot 1.2s ease forwards" }} /></div>
-          </div>
-          <div className={`flex justify-center gap-2 mt-2 transition-all duration-500 ${stage >= 2 ? "opacity-100" : "opacity-0"}`}>
-            {["INIT", "AUTH", "FEEDS", "READY"].map((s, i) => (
-              <span key={s} className={`font-mono text-[9px] tracking-widest px-2 py-0.5 rounded border transition-all duration-300 ${stage > i ? "border-cyan-400/40 text-cyan-400 bg-cyan-400/10" : "border-white/10 text-neutral-600"}`}>{s}</span>
+    <div className={`fixed inset-0 z-[100] bg-[#030308] overflow-hidden ${leaving ? "boot-out" : ""}`} data-testid="boot-screen">
+      {/* Subtle matrix rain - minimal */}
+      <div className="absolute inset-0 opacity-8 pointer-events-none">
+        {Array.from({ length: 6 }).map((_, i) => (
+          <div key={i} className="absolute top-0 font-mono text-[10px] text-green-400/30 leading-none" style={{ left: (i * 17) + "%", animation: "matrix-rain " + (3 + (i % 2)) + "s linear infinite", animationDelay: (i * 0.6) + "s", willChange: "transform" }}>
+            {Array.from({ length: 6 }).map((_, j) => (
+              <div key={j} style={{ opacity: 0.3 }}>{String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))}</div>
             ))}
           </div>
-          <div className={`flex items-center justify-center gap-2 mt-4 transition-all duration-700 ${stage >= 1 ? "opacity-100" : "opacity-0"}`}>
-            <HackerAvatar size={32} />
-            <span className="font-mono text-[9px] tracking-widest text-neutral-500">CREATED BY KIKI</span>
+        ))}
+      </div>
+      {/* Rising candlesticks */}
+      <div className="absolute bottom-0 inset-x-0 h-32 pointer-events-none opacity-25">
+        {Array.from({ length: 16 }).map((_, i) => {
+          const h = 20 + Math.random() * 80;
+          const isGreen = Math.random() > 0.4;
+          return (
+            <div key={i} className="absolute bottom-0" style={{ left: (i * 6.25 + 1) + "%", width: "2%", height: h + "px", background: isGreen ? "linear-gradient(to top, rgba(16,185,129,0.7), rgba(16,185,129,0.1))" : "linear-gradient(to top, rgba(239,68,68,0.7), rgba(239,68,68,0.1))", animation: "rise-up " + (0.8 + Math.random() * 0.4) + "s ease-out forwards", animationDelay: (i * 0.05) + "s", transformOrigin: "bottom", borderRadius: "2px 2px 0 0" }} />
+          );
+        })}
+      </div>
+      {/* Floating price tags */}
+      <div className="absolute inset-0 pointer-events-none overflow-hidden">
+        {["AAPL", "TSLA", "NVDA", "BTC", "ETH", "SPY"].map((s, i) => (
+          <div key={s} className="absolute font-mono text-[11px] font-bold" style={{ left: (10 + i * 15) + "%", top: (15 + (i % 4) * 16) + "%", color: Math.random() > 0.4 ? "#10B981" : "#EF4444", animation: "float-up " + (3 + i * 0.4) + "s ease-in-out infinite", animationDelay: (i * 0.4) + "s", textShadow: "0 0 10px currentColor", opacity: 0.5 }}>
+            {s} {Math.random() > 0.4 ? "+" : "-"}{(Math.random() * 6).toFixed(2)}%
           </div>
+        ))}
+      </div>
+      {/* Scan line */}
+      <div className="absolute inset-x-0 h-[2px] bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent pointer-events-none" style={{ animation: "scan-line 2s linear infinite" }} />
+      {/* Main content */}
+      <div className="relative z-10 w-full max-w-lg text-center space-y-6 px-6">
+        <div className="relative mx-auto w-28 h-28">
+          <div className="absolute inset-0 rounded-full blur-2xl opacity-50 animate-pulse" style={{ background: "var(--a)" }} />
+          <svg viewBox="0 0 64 64" className="relative w-full h-full" style={{ animation: "spin 4s linear infinite" }}>
+            <polygon points="32,4 58,18 58,46 32,60 6,46 6,18" fill="none" stroke="var(--a)" strokeWidth="2" opacity="0.9" />
+            <circle cx="32" cy="32" r="6" fill="var(--a)" opacity="0.9">
+              <animate attributeName="r" values="4;10;4" dur="1.5s" repeatCount="indefinite" />
+            </circle>
+            <circle cx="32" cy="32" r="3" fill="#ffffff" opacity="0.95">
+              <animate attributeName="opacity" values="0.5;1;0.5" dur="1.2s" repeatCount="indefinite" />
+            </circle>
+          </svg>
+        </div>
+        <div className={`transition-all duration-700 ${stage >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
+          <p className="font-disp text-5xl font-bold tracking-[0.2em] text-white" style={{ textShadow: "0 0 40px rgba(0,255,255,0.3)" }}>{siteName}</p>
+          <p className="font-mono text-[10px] tracking-[0.35em] accent mt-2">NEURAL TERMINAL · v3</p>
+        </div>
+        <div className={`transition-all duration-500 ${stage >= 2 ? "opacity-100" : "opacity-0"}`}>
+          <p className="font-mono text-xs text-neutral-400 mt-2 caret">{stage >= 3 ? "systems online" : "linking market feeds"}</p>
+          <div className="boot-bar h-[2px] bg-white/5 mt-3 overflow-hidden rounded-full"><i className="block h-full bg-gradient-to-r from-cyan-400 to-blue-500" style={{ animation: "boot 1.2s ease forwards" }} /></div>
+        </div>
+        <div className={`flex justify-center gap-2 mt-2 transition-all duration-500 ${stage >= 2 ? "opacity-100" : "opacity-0"}`}>
+          {["INIT", "AUTH", "FEEDS", "READY"].map((s, i) => (
+            <span key={s} className={`font-mono text-[9px] tracking-widest px-2 py-0.5 rounded border transition-all duration-300 ${stage > i ? "border-cyan-400/40 text-cyan-400 bg-cyan-400/10" : "border-white/10 text-neutral-600"}`}>{s}</span>
+          ))}
         </div>
       </div>
-      {/* Made by Kiki popup - appears during loading */}
+      {/* Made by Kiki - full screen popup during loading */}
       {showCredit && (
-        <div className={`fixed inset-0 z-[101] flex items-center justify-center bg-black/75 backdrop-blur-md transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`}>
-          <div className={`relative bg-[#0a0a14]/95 border border-cyan-500/30 rounded-2xl p-8 max-w-sm w-full mx-4 text-center space-y-4 shadow-[0_0_60px_rgba(0,255,255,0.2)] transition-all duration-500 ${leaving ? "scale-95 opacity-0" : "scale-100 opacity-100"}`}>
-            <div className="absolute inset-0 rounded-2xl overflow-hidden pointer-events-none">
+        <div className={`fixed inset-0 z-[101] flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`}>
+          <div className="absolute inset-0 pointer-events-none overflow-hidden">
+            {Array.from({ length: 12 }).map((_, i) => {
+              const h = 30 + Math.random() * 100;
+              const isGreen = Math.random() > 0.4;
+              return (
+                <div key={i} className="absolute bottom-0" style={{ left: (i * 8.3 + 1) + "%", width: "2%", height: h + "px", background: isGreen ? "linear-gradient(to top, rgba(16,185,129,0.7), rgba(16,185,129,0.1))" : "linear-gradient(to top, rgba(239,68,68,0.7), rgba(239,68,68,0.1))", animation: "rise-up " + (0.8 + Math.random() * 0.4) + "s ease-out forwards", animationDelay: (i * 0.05) + "s", transformOrigin: "bottom", borderRadius: "2px 2px 0 0" }} />
+              );
+            })}
+            {["AAPL", "TSLA", "NVDA", "BTC", "ETH", "SPY"].map((s, i) => (
+              <div key={s} className="absolute font-mono text-[11px] font-bold" style={{ left: (8 + i * 15) + "%", top: (12 + (i % 4) * 18) + "%", color: Math.random() > 0.4 ? "#10B981" : "#EF4444", animation: "float-up " + (3.5 + i * 0.3) + "s ease-in-out infinite", animationDelay: (i * 0.4) + "s", textShadow: "0 0 10px currentColor", opacity: 0.6 }}>
+                {s} {Math.random() > 0.4 ? "+" : "-"}{(Math.random() * 6).toFixed(2)}%
+              </div>
+            ))}
+          </div>
+          <div className={`relative bg-[#0a0a14]/90 border border-cyan-500/40 rounded-3xl p-10 max-w-md w-full mx-4 text-center space-y-5 shadow-[0_0_80px_rgba(0,255,255,0.2)] transition-all duration-500 ${leaving ? "scale-95 opacity-0" : "scale-100 opacity-100"}`}>
+            <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
               <div className="absolute inset-0 bg-gradient-to-b from-cyan-500/10 via-transparent to-cyan-500/5" />
             </div>
-            <HackerAvatar size={96} className="mx-auto" />
-            <div>
-              <p className="font-disp text-3xl font-bold tracking-[0.15em] text-white" style={{ textShadow: "0 0 30px rgba(0,255,255,0.6)" }}>CREATED BY KIKI</p>
-              <p className="font-mono text-[10px] tracking-widest text-cyan-400 mt-2">DESIGNER · DEVELOPER · CREATOR</p>
+            <div className="relative">
+              <HackerAvatar size={120} className="mx-auto" />
             </div>
-            <div className="flex items-center justify-center gap-1.5 font-mono text-[9px] text-neutral-500 tracking-widest">
+            <div className="relative">
+              <p className="font-disp text-4xl font-bold tracking-[0.15em] text-white" style={{ textShadow: "0 0 30px rgba(0,255,255,0.6), 0 0 60px rgba(0,255,255,0.3)" }}>CREATED BY KIKI</p>
+              <p className="font-mono text-[11px] tracking-widest text-cyan-400 mt-3">DESIGNER · DEVELOPER · CREATOR</p>
+            </div>
+            <div className="relative flex items-center justify-center gap-2 font-mono text-[10px] text-neutral-500 tracking-widest">
               <span className="pulse-dot" />
               <span>INITIALIZING NEURAL TERMINAL</span>
             </div>
-            <div className="boot-bar h-[2px] bg-white/5 overflow-hidden rounded-full"><i className="block h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400" style={{ animation: "boot 2.5s ease forwards" }} /></div>
+            <div className="relative boot-bar h-[2px] bg-white/5 overflow-hidden rounded-full"><i className="block h-full bg-gradient-to-r from-cyan-400 via-blue-500 to-cyan-400" style={{ animation: "boot 2.5s ease forwards" }} /></div>
           </div>
         </div>
       )}
-    </>
   );
 };
 
