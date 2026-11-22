@@ -169,6 +169,21 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
                 <button className="sf-btn sf-btn-sm" onClick={onClose} aria-label="Close prediction" data-testid="prediction-close-button"><X size={14} /></button>
               </div>
             </div>
+            {/* Quick summary */}
+            {p && (
+              <div className="px-5 py-3 border-b border-[#1E293B] bg-[#07090E]/40">
+                <p className="font-mono text-xs text-slate-300 leading-relaxed">
+                  <span style={{ color: sigCol }} className="font-bold">{sig}</span>
+                  {" · "}
+                  <span className="text-white">{fmtPrice(p.price)}</span>
+                  {" → "}
+                  <span style={{ color: C.avg }}>{fmtPrice(p.scenarios.base.price)}</span>
+                  {" avg over "}{p.tf_label.toLowerCase()}
+                  {" · "}
+                  <span style={{ color: C.best }}>{fmtProb(p.probabilities.up)}</span> chance of closing higher
+                </p>
+              </div>
+            )}
             {/* timeframe + toggles */}
             <div className="flex flex-wrap items-center gap-2 px-5 py-3 border-b border-[#1E293B] bg-[#07090E]/60">
               <div className="flex gap-1" role="tablist" aria-label="Forecast timeframe">
