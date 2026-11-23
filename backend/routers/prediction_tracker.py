@@ -116,6 +116,20 @@ async def evaluate_pending():
     return count
 
 
+@router.get("/predictions/pending")
+async def pending_predictions(me: dict = Depends(require_user)):
+    """Get unevaluated predictions."""
+    docs = await db.prediction_log.find({"evaluated": False}, {"_id": 0}).sort("created_at", -1).to_list(50)
+    return {"count": len(docs), "predictions": docs}
+
+
+@router.post("/predictions/evaluate")
+async def trigger_evaluation(me: dict = Depends(require_user)):
+    """Manually trigger evaluation of pending predictions."""
+    count = await evaluate_pending()
+    return {"evaluated": count}
+
+
 # ---------- Admin AI Prediction Supervisor ----------
 import time as _time
 from emergentintegrations.llm.chat import LlmChat, UserMessage
