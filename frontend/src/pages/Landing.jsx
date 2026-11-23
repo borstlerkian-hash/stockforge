@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import { motion } from "motion/react";
 import { Activity, Bot, Download, LineChart, Layers, ShieldCheck } from "lucide-react";
 import { Background } from "@/components/sf/Background";
-import { HackerAvatar } from "@/components/sf/HackerAvatar";
 import { InstallDrawer } from "@/components/sf/InstallDrawer";
 import { applyTheme } from "@/lib/theme";
 import { useSite } from "@/lib/site";
@@ -60,16 +59,6 @@ export default function Landing() {
         </section>
       </div>
       <InstallDrawer open={install} onOpenChange={setInstall} />
-      <div className="relative z-10 max-w-[1400px] mx-auto px-6 lg:px-12 pb-12 flex flex-col items-center gap-3">
-        <div className="flex items-center gap-4">
-          <HackerAvatar size={64} />
-          <div className="text-center">
-            <p className="font-disp text-2xl font-bold tracking-[0.15em] text-neutral-200">CREATED BY KIKI</p>
-            <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-1">DESIGNER · DEVELOPER · CREATOR</p>
-          </div>
-          <HackerAvatar size={64} />
-        </div>
-      </div>
     </div>
   );
 }
