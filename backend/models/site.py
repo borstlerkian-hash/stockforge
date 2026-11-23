@@ -27,7 +27,7 @@ class SiteSettings(BaseModel):
     landing_headline: str = Field("The market, forged into one glowing terminal.", max_length=140)
     landing_sub: str = Field(
         "Every NASDAQ company and the top 100 cryptos, Monte Carlo predictions with support & resistance, "
-        "deposits to invest, an AI advisor powered by Claude and ten membership tiers that transform the whole interface.",
+        "deposits to invest, an AI advisor and ten membership tiers that transform the whole interface.",
         max_length=400)
     home_headline: str = Field("Market Feed", max_length=80)
     home_sub: str = Field("Session momentum · tap any name for a deep dive", max_length=200)

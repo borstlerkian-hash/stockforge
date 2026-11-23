@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
-import { Activity, Bot, Download, LineChart, Layers, ShieldCheck } from "lucide-react";
+import { Activity, Bot, Download, LineChart, Layers, ShieldCheck, Sparkles } from "lucide-react";
 import { Background } from "@/components/sf/Background";
 import { InstallDrawer } from "@/components/sf/InstallDrawer";
 import { applyTheme } from "@/lib/theme";
@@ -10,8 +10,8 @@ import { AnnouncementBanner } from "@/components/sf/AnnouncementBanner";
 
 const FEATURES = [
   { icon: Activity, t: "Full universe", d: "All ~4,000 NASDAQ listings and the top 100 cryptos, live, searchable and sortable." },
-  { icon: Bot, t: "Quantum forecasts", d: "Monte Carlo cones with best / average / worst case, S/R rails, probabilities and a Claude briefing." },
-  { icon: LineChart, t: "Deposit & invest", d: "Fund instantly or by card, then trade any stock or coin at live prices with full P&L." },
+  { icon: LineChart, t: "Forecasts", d: "Monte Carlo cones with best, average and worst case, support & resistance rails and probabilities." },
+  { icon: Bot, t: "AI advisor", d: "An intelligent market assistant that reads signals and explains what they mean in plain language." },
   { icon: Layers, t: "10 tiers", d: "Every tier re-skins the terminal — from plain ledger to void singularity." },
 ];
 
@@ -39,7 +39,7 @@ export default function Landing() {
               {headline && headline !== "The market, forged into one glowing terminal." ? headline : <>The market,<br /><span className="accent">forged</span> into one<br />glowing terminal.</>}
             </h1>
             <p className="text-neutral-400 text-base md:text-lg max-w-xl mt-6 leading-relaxed" data-testid="landing-sub">
-              {s?.landing_sub || "Every NASDAQ company and the top 100 cryptos, futuristic Monte Carlo predictions with support & resistance, deposits to invest, an AI advisor powered by Claude and ten membership tiers that transform the whole interface."}
+              {s?.landing_sub || "Every NASDAQ company and the top 100 cryptos, Monte Carlo predictions with support & resistance, deposits to invest, an AI advisor and ten membership tiers that transform the whole interface."}
             </p>
             <div className="flex flex-wrap gap-3 mt-10">
               <Link to="/sign-in" className="sf-btn sf-btn-p !px-6 !py-4 !text-sm" data-testid="landing-cta-button">Enter the terminal</Link>
