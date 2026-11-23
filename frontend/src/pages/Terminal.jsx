@@ -139,24 +139,13 @@ const Boot = () => {
           <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-1">TO THE NEURAL TERMINAL</p>
         </div>
       </div>
-      {/* Made by Kiki popup - appears during loading */}
       {showCredit && (
         <div className={`fixed inset-0 z-[101] flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`}>
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {/* Rising candlesticks - red theme */}
-            {Array.from({ length: 12 }).map((_, i) => {
-              const h = 30 + Math.random() * 80;
-              const isGreen = Math.random() > 0.4;
-              return (
-                <div key={i} className="absolute bottom-0" style={{ left: (i * 8.3 + 1) + "%", width: "2%", height: h + "px", background: isGreen ? "linear-gradient(to top, rgba(16,185,129,0.6), rgba(16,185,129,0.1))" : "linear-gradient(to top, rgba(239,68,68,0.6), rgba(239,68,68,0.1))", animation: "rise-up " + (0.8 + Math.random() * 0.4) + "s ease-out forwards", animationDelay: (i * 0.05) + "s", transformOrigin: "bottom", borderRadius: "2px 2px 0 0" }} />
-              );
-            })}
-            {/* Floating price tags */}
-            {["AAPL", "TSLA", "NVDA", "BTC", "ETH", "SPY"].map((s, i) => (
-              <div key={s} className="absolute font-mono text-[11px] font-bold" style={{ left: (8 + i * 15) + "%", top: (12 + (i % 4) * 18) + "%", color: Math.random() > 0.4 ? "#10B981" : "#EF4444", animation: "float-up " + (3.5 + i * 0.3) + "s ease-in-out infinite", animationDelay: (i * 0.4) + "s", textShadow: "0 0 10px currentColor", opacity: 0.5 }}>
-                {s} {Math.random() > 0.4 ? "+" : "-"}{(Math.random() * 6).toFixed(2)}%
-              </div>
-            ))}
+            {/* Red ambient glow */}
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px] opacity-20" style={{ background: "radial-gradient(circle, #ef4444 0%, #991b1b 40%, transparent 70%)" }} />
+            <div className="absolute top-1/4 left-1/4 w-[200px] h-[200px] rounded-full blur-[60px] opacity-15" style={{ background: "radial-gradient(circle, #f97316 0%, transparent 70%)" }} />
+            <div className="absolute bottom-1/4 right-1/4 w-[200px] h-[200px] rounded-full blur-[60px] opacity-15" style={{ background: "radial-gradient(circle, #ef4444 0%, transparent 70%)" }} />
           </div>
           <div className={`relative bg-[#0a0a0a]/95 border border-red-500/30 rounded-3xl p-10 max-w-md w-full mx-4 text-center space-y-5 shadow-[0_0_80px_rgba(239,68,68,0.2)] transition-all duration-500 ${leaving ? "scale-95 opacity-0" : "scale-100 opacity-100"}`}>
             <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">

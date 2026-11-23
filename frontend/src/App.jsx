@@ -6,8 +6,6 @@ import ClerkAuthProvider, { useClerkUnavailable } from "@/components/auth/ClerkA
 const Terminal = lazy(() => import("@/pages/Terminal"));
 const Landing = lazy(() => import("@/pages/Landing"));
 import { Background } from "@/components/sf/Background";
-
-import { HackerAvatar } from "@/components/sf/HackerAvatar";
 import ErrorBoundary from "@/components/sf/ErrorBoundary";
 
 const AuthPage = ({ children }) => (
@@ -15,13 +13,6 @@ const AuthPage = ({ children }) => (
     <Background tier={5} />
     <div className="relative z-10 w-full max-w-md">
       {children}
-      <div className="mt-8 flex flex-col items-center gap-3">
-        <HackerAvatar size={56} />
-        <div className="text-center">
-          <p className="font-disp text-lg font-bold tracking-[0.15em] text-neutral-300">CREATED BY KIKI</p>
-          <p className="font-mono text-[9px] tracking-widest text-neutral-500 mt-1">DESIGNER · DEVELOPER · CREATOR</p>
-        </div>
-      </div>
     </div>
   </div>
 );
