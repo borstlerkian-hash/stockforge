@@ -21,6 +21,7 @@ const Paper = lazy(() => import("@/pages/Paper"));
 const Tiers = lazy(() => import("@/pages/Tiers"));
 const Admin = lazy(() => import("@/pages/Admin"));
 import { AdminAccess } from "@/components/sf/AdminAccess";
+import { DesignSettings } from "@/components/sf/DesignSettings";
 import { BtcCheckout } from "@/components/sf/BtcCheckout";
 import { NotificationsSheet } from "@/components/sf/NotificationsSheet";
 const Markets = lazy(() => import("@/pages/Markets"));
@@ -244,7 +245,7 @@ const Shell = () => {
         )}
       </div>
       <CommandPalette open={cmd} onOpenChange={setCmd} onInstall={() => setInstall(true)} />
-      <InstallDrawer open={install} onOpenChange={setInstall} extra={<AdminAccess onDone={() => setInstall(false)} />} />
+      <InstallDrawer open={install} onOpenChange={setInstall} extra={<><AdminAccess onDone={() => setInstall(false)} /><DesignSettings /></>} />
       <TickerDialog />
       <BtcCheckout />
       <NotificationsSheet open={bell} onOpenChange={setBell} />

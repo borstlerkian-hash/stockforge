@@ -88,6 +88,15 @@ export function SFProvider({ children }) {
   const nt = useNotifications(api, refreshMe);
   useEffect(() => { refreshMe(); }, [refreshMe]);
 
+  // Apply design preferences when user data loads
+  useEffect(() => {
+    if (me?.design?.accent) {
+      const colors = { red: "#ef4444", cyan: "#00F0FF", emerald: "#10B981", amber: "#F59E0B", violet: "#8B5CF6" };
+      const c = colors[me.design.accent];
+      if (c) document.documentElement.style.setProperty("--a", c);
+    }
+  }, [me?.design?.accent]);
+
   const themeTier = preview || me?.theme || 1;
   const site = useSite().data?.settings;
   useEffect(() => applyTheme(themeTier, site), [themeTier, site]);

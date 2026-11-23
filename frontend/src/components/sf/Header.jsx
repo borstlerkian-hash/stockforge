@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Home, BarChart3, LayoutDashboard, Bot, Star, MoreHorizontal, Download, Search, Wifi, WifiOff, ArrowDownUp, Activity, Eye, Brain, Wallet, Crown, Shield, TrendingUp, Zap, Target } from "lucide-react";
+import { Home, BarChart3, LayoutDashboard, Bot, Star, MoreHorizontal, Download, Search, Wifi, WifiOff, ArrowDownUp, Activity, Eye, Brain, Wallet, Crown, Shield, TrendingUp, Zap, Target, Settings } from "lucide-react";
 import { UserButton } from "@clerk/react";
 import { useSF } from "@/context/SFContext";
 import { PAGES, pct, priceFmt } from "@/lib/theme";
@@ -98,6 +98,7 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
           <BellButton onClick={onBell} />
           <NetPill />
           <button className="sf-btn sf-btn-sm sf-btn-p hidden sm:inline-flex" onClick={onInstall} data-testid="get-app-button"><Download size={14} /><span className="hidden sm:inline">Get app</span></button>
+  {me && me.tier >= 5 && <button className="sf-btn sf-btn-sm" onClick={onInstall} data-testid="settings-button" aria-label="Design settings"><Settings size={14} /><span className="hidden sm:inline">Settings</span></button>}
           <Clock />
           <TierSwitch />
           {tier && <span className="hidden md:inline font-mono text-[10px] px-2 py-1 border border-[var(--a)] accent tracking-widest" data-testid="tier-badge">T{tier.id} {tier.name}</span>}

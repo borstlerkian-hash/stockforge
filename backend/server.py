@@ -25,6 +25,7 @@ from universe import LAST_PX, equity_of, find_asset, in_universe, price_of, univ
 from predict import TF, Timeframe, narrative_context, predict
 from wallet import build_wallet_router, ensure_wallet_indexes
 from routers.site import build_site_router
+from routers.prediction_tracker import router as prediction_tracker_router, log_prediction
 from lib.ai_errors import friendly_ai_error, is_budget_error
 from routers.agent import build_agent_router
 from routers.digest import router as digest_router
@@ -411,7 +412,13 @@ async def get_prediction(sym: str, tf: Timeframe = "1W", doc: dict = Depends(cur
     asset = await find_asset(sym)
     if not asset:
         raise HTTPException(404, f"{sym.upper()} is not a NASDAQ listing or a top-100 crypto")
-    return await predict(asset, tf)
+    result = await predict(asset, tf)
+    # Log prediction for accuracy tracking and AI supervision
+    try:
+        await log_prediction(sym.upper(), asset.get("name", sym), asset.get("kind", "stock"), tf, result)
+    except Exception:
+        pass
+    return result
 
 
 class NarrativeIn(BaseModel):
@@ -479,6 +486,25 @@ app.include_router(build_wallet_router(current))
 app.include_router(build_site_router(require_admin))
 app.include_router(build_agent_router(require_admin))
 app.include_router(digest_router)
+app.include_router(prediction_tracker_router)
+
+# ---------- Design settings (tier 5+) ----------
+@api.get("/me/design")
+async def get_design(doc: dict = Depends(current)):
+    """Get user's design preferences (tier 5+ only)."""
+    if (doc.get("tier") or 1) < 5:
+        raise HTTPException(403, "Design customization requires Tier 5 (PRO) or higher")
+    return doc.get("design", {"accent": "red", "theme": "dark", "font": "default"})
+
+@api.put("/me/design")
+async def set_design(body: dict, doc: dict = Depends(current)):
+    """Set user's design preferences (tier 5+ only)."""
+    if (doc.get("tier") or 1) < 5:
+        raise HTTPException(403, "Design customization requires Tier 5 (PRO) or higher")
+    allowed_keys = {"accent", "theme", "font", "compact", "animations"}
+    design = {k: v for k, v in body.items() if k in allowed_keys}
+    await db.users.update_one({"user_id": doc["user_id"]}, {"$set": {"design": design}})
+    return design
 
 # Lightweight health check (used by uptime monitors / keep-alive pings).
 @app.get("/api/health", include_in_schema=False)
