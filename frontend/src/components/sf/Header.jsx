@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Home, BarChart3, LayoutDashboard, Bot, Star, MoreHorizontal, Download, Search, Wifi, WifiOff, ArrowDownUp, Activity, Eye, Brain, Wallet, Crown, Shield, TrendingUp, Zap, Target, Settings } from "lucide-react";
+import { Home, BarChart3, LayoutDashboard, Bot, Star, MoreHorizontal, Download, Search, Wifi, WifiOff, ArrowDownUp, Activity, Eye, Crown, Shield, TrendingUp, Zap, Settings } from "lucide-react";
 import { UserButton } from "@clerk/react";
 import { useSF } from "@/context/SFContext";
 import { PAGES, pct, priceFmt } from "@/lib/theme";
