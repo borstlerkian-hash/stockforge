@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { motion } from "motion/react";
-import { Activity, Bot, Download, LineChart, Layers, ShieldCheck, Sparkles } from "lucide-react";
+import { Activity, Bot, Download, LineChart, Layers, ShieldCheck } from "lucide-react";
 import { Background } from "@/components/sf/Background";
 import { InstallDrawer } from "@/components/sf/InstallDrawer";
 import { applyTheme } from "@/lib/theme";
