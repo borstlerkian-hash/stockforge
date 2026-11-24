@@ -71,7 +71,7 @@ export default function AgentTab({ onChanged }: { onChanged: () => void }) {
   const submit = (t: string) => { if (t.trim() && !send.isPending) send.mutate(t.trim()); };
 
   return (
-    <div className="sf-panel flex flex-col h-[calc(100vh-260px)] min-h-[520px]" data-testid="agent-panel">
+    <div className="sf-panel flex flex-col h-[calc(100dvh-260px)] min-h-[520px]" data-testid="agent-panel">
       <div className="flex items-center gap-3 px-5 py-4 border-b border-white/5">
         <span className="grid place-items-center w-9 h-9 rounded-xl bg-[var(--a-soft)] border border-[var(--a-line)]"><Bot size={17} className="accent" /></span>
         <div className="flex-1 min-w-0"><p className="font-medium">Admin agent</p><p className="text-xs text-neutral-500">Proposes changes — nothing happens until you click Apply. Each message uses LLM credits.</p></div>

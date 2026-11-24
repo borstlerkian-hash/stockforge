@@ -13,19 +13,22 @@ const Particles = ({ tier }) => {
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     let w = 0, h = 0, raf = 0, last = 0, resizeRaf = 0;
 
+    let pts = [];
+    const buildParticles = () => {
+      const count = w < 700 ? Math.round(t.particles / 2) : t.particles;
+      pts = Array.from({ length: count }, () => ({
+        x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.6 + 0.4,
+        vx: (Math.random() - 0.5) * t.speed, vy: -Math.random() * t.speed - 0.05, ph: Math.random() * 6.28,
+        alt: Math.random() > 0.9,
+      }));
+    };
     const resize = () => {
       w = window.innerWidth; h = window.innerHeight;
       cv.width = Math.round(w * dpr); cv.height = Math.round(h * dpr);
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      buildParticles();
     };
     resize();
-
-    const count = w < 700 ? Math.round(t.particles / 2) : t.particles;
-    const pts = Array.from({ length: count }, () => ({
-      x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.6 + 0.4,
-      vx: (Math.random() - 0.5) * t.speed, vy: -Math.random() * t.speed - 0.05, ph: Math.random() * 6.28,
-      alt: Math.random() > 0.9, // a fixed minority of particles use the secondary accent
-    }));
     const baseAlpha = 0.4 + t.glow * 0.6;
 
     const draw = (time) => {

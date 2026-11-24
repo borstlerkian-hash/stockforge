@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { AlertTriangle, Info, Megaphone, X } from "lucide-react";
 import type { BannerTone } from "@/lib/site";
 import { useSite } from "@/lib/site";
@@ -9,9 +9,11 @@ export const AnnouncementBanner = () => {
   const { data, isError } = useSite();
   const s = data?.settings;
   const key = `sf_banner_closed_${s?.updated_at ?? ""}`;
-  const [closed, setClosed] = useState(() => {
-    try { return sessionStorage.getItem(key) === "1"; } catch { return false; }
-  });
+  const [closed, setClosed] = useState(false);
+  // Reset dismissed state when the banner revision changes
+  useEffect(() => {
+    try { setClosed(sessionStorage.getItem(key) === "1"); } catch { setClosed(false); }
+  }, [key]);
   if (isError || !s || !s.banner_live || closed) return null;
   const tone: BannerTone = s.banner_tone;
   const Icon = ICON[tone];

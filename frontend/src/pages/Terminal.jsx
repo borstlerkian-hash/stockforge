@@ -140,30 +140,7 @@ const Boot = () => {
           <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-1">TO THE NEURAL TERMINAL</p>
         </div>
       </div>
-      {showCredit && (
-        <div className={`fixed inset-0 z-[101] flex items-center justify-center bg-black/80 backdrop-blur-md transition-opacity duration-500 ${leaving ? "opacity-0" : "opacity-100"}`}>
-          <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {/* Red ambient glow */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full blur-[100px] opacity-20" style={{ background: "radial-gradient(circle, #ef4444 0%, #991b1b 40%, transparent 70%)" }} />
-            <div className="absolute top-1/4 left-1/4 w-[200px] h-[200px] rounded-full blur-[60px] opacity-15" style={{ background: "radial-gradient(circle, #f97316 0%, transparent 70%)" }} />
-            <div className="absolute bottom-1/4 right-1/4 w-[200px] h-[200px] rounded-full blur-[60px] opacity-15" style={{ background: "radial-gradient(circle, #ef4444 0%, transparent 70%)" }} />
-          </div>
-          <div className={`relative bg-[#0a0a0a]/95 border border-red-500/30 rounded-3xl p-10 max-w-md w-full mx-4 text-center space-y-5 shadow-[0_0_80px_rgba(239,68,68,0.2)] transition-all duration-500 ${leaving ? "scale-95 opacity-0" : "scale-100 opacity-100"}`}>
-            <div className="absolute inset-0 rounded-3xl overflow-hidden pointer-events-none">
-              <div className="absolute inset-0 bg-gradient-to-b from-red-500/10 via-transparent to-red-500/5" />
-            </div>
-            <div className="relative">
-              <p className="font-disp text-4xl font-bold tracking-[0.15em] text-white" style={{ textShadow: "0 0 30px rgba(239,68,68,0.6), 0 0 60px rgba(239,68,68,0.3)" }}>WELCOME</p>
-              <p className="font-mono text-[11px] tracking-widest text-red-400 mt-3">TO THE NEURAL TERMINAL</p>
-            </div>
-            <div className="relative flex items-center justify-center gap-2 font-mono text-[10px] text-neutral-500 tracking-widest">
-              <span className="pulse-dot" style={{ background: "#ef4444", boxShadow: "0 0 0 0 #ef4444" }} />
-              <span>INITIALIZING SYSTEMS</span>
-            </div>
-            <div className="relative boot-bar h-[2px] bg-white/5 overflow-hidden rounded-full"><i className="block h-full bg-gradient-to-r from-red-500 via-orange-500 to-red-500" style={{ animation: "boot 2.5s ease forwards" }} /></div>
-          </div>
-        </div>
-      )}
+      {/* Welcome overlay removed — duplicate of inline welcome message above */}
     </div>
   );
 };

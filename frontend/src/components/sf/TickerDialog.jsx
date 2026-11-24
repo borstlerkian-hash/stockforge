@@ -23,7 +23,7 @@ export const TickerDialog = () => {
   };
   return (
     <Dialog open={!!ticker} onOpenChange={(o) => !o && openTicker(null)}>
-      <DialogContent className="bg-[#080808] border-[var(--a-line)] max-w-lg" data-testid="ticker-dialog">
+      <DialogContent className="bg-[#080808] border-[var(--a-line)] max-w-lg max-h-[90vh] overflow-y-auto" data-testid="ticker-dialog">
         <DialogHeader>
           <p className="kicker">DEEP DIVE</p>
           <DialogTitle className="font-disp text-3xl flex items-baseline gap-3">{t.sym}<span className="text-base text-neutral-400 font-sans">{t.name}</span></DialogTitle>
