@@ -114,6 +114,12 @@ export const MobileNav = () => {
   const { page, setPage } = useSF();
   const pages = useNavPages();
   const [more, setMore] = useState(false);
+  useEffect(() => {
+    if (!more) return;
+    const onKey = (e) => { if (e.key === "Escape") setMore(false); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [more]);
   // Primary tabs shown directly in the dock; the rest live behind "More".
 const ICONS = { home: Home, markets: BarChart3, dash: LayoutDashboard, ai: Bot, watch: Star };
 const MORE_ICONS = { markets: BarChart3, dash: LayoutDashboard, quotes: TrendingUp, live: Activity, scan: Zap, watch: Eye, ai: Bot, trade: ArrowDownUp, tiers: Crown, admin: Shield };
