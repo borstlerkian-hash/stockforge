@@ -97,10 +97,11 @@ export function SFProvider({ children }) {
   const modeGate = snap?.modeGates?.[savedMode] ?? modeMinTier(savedMode);
   const interfaceMode = modeGate <= (me?.tier || 1) ? savedMode : DEFAULT_MODE;
   const designAccent = me?.design?.accent || "";
+  const designMotion = me?.design?.motion;
 
   useEffect(() => {
-    applyTheme(themeTier, site, { mode: interfaceMode, accent: designAccent });
-  }, [themeTier, site, interfaceMode, designAccent]);
+    applyTheme(themeTier, site, { mode: interfaceMode, accent: designAccent, motion: designMotion });
+  }, [themeTier, site, interfaceMode, designAccent, designMotion]);
 
   const setPage = useCallback((p) => {
     // Instant jump: a smooth scroll fighting the page remount reads as jank.

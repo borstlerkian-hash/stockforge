@@ -33,6 +33,15 @@ export const INTERFACE_MODES = [
   },
 ];
 
+// The surface each mode is drawn from. Used by the preview and the cursor signal field.
+export const MODE_MATERIAL = {
+  professional: "alloy",
+  smooth: "glass",
+  water: "liquid",
+  scifi: "metal",
+  singularity: "plasma",
+};
+
 export const DEFAULT_MODE = "smooth";
 
 export const modeById = (id) => INTERFACE_MODES.find((m) => m.id === id) || INTERFACE_MODES[1];

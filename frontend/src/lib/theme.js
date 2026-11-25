@@ -1,4 +1,6 @@
-import { DEFAULT_MODE, INTERFACE_MODES } from "./interfaceModes";
+import { DEFAULT_MODE, INTERFACE_MODES, MODE_MATERIAL } from "./interfaceModes";
+
+export const DEFAULT_MOTION = 0.75;
 
 export const TIER_THEMES = [
   { a: "#d4d4d4", a2: "#737373", glow: 0.12, particles: 14, speed: 0.15, blur: 0 },
@@ -68,8 +70,13 @@ export const applyTheme = (tier, brand, design = {}) => {
   }
   Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
   const mode = INTERFACE_MODES.some((m) => m.id === design?.mode) ? design.mode : DEFAULT_MODE;
+  const rawMotion = design?.motion;
+  const motion = typeof rawMotion === "number" && Number.isFinite(rawMotion)
+    ? Math.min(1, Math.max(0, rawMotion)) : DEFAULT_MOTION;
   root.dataset.tier = String(tier);
   root.dataset.mode = mode;
+  root.dataset.material = MODE_MATERIAL[mode] || "glass";
+  root.style.setProperty("--motion", String(motion));
   root.classList.toggle("fx-scan", mode !== "professional" && tier >= 3);
   root.classList.toggle("fx-hud", mode !== "professional" && tier >= 5);
   root.classList.toggle("fx-irid", mode !== "professional" && tier >= 7 && tier !== 9);

@@ -7,6 +7,7 @@ import { Header, MobileNav } from "@/components/sf/Header";
 import { CommandPalette } from "@/components/sf/CommandPalette";
 import { InstallDrawer } from "@/components/sf/InstallDrawer";
 import { SettingsDrawer } from "@/components/sf/SettingsDrawer";
+import { CursorField } from "@/components/sf/CursorField";
 import { TickerDialog } from "@/components/sf/TickerDialog";
 import { useNavPages } from "@/components/sf/Header";
 import { AnnouncementBanner } from "@/components/sf/AnnouncementBanner";
@@ -246,6 +247,7 @@ const Shell = () => {
       <BtcCheckout />
       <NotificationsSheet open={bell} onOpenChange={setBell} />
       <ForgeOverlays />
+      <CursorField />
     </div>
   );
 };

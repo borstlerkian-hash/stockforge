@@ -5,11 +5,10 @@ import { DesignSettings } from "@/components/sf/DesignSettings";
 
 export const SettingsDrawer = ({ open, onOpenChange, onInstall }) => (
   <Sheet open={open} onOpenChange={onOpenChange}>
-    <SheetContent side="right" className="bg-[#070707] border-l border-[var(--a-line)] w-full sm:max-w-md overflow-y-auto" data-testid="settings-drawer">
+    <SheetContent side="right" className="studio-drawer bg-[#080B12] border-l border-[var(--a-line)] w-full sm:max-w-3xl overflow-y-auto" data-testid="settings-drawer">
       <SheetHeader>
-        <p className="kicker">TERMINAL</p>
         <SheetTitle className="font-disp text-3xl text-left">Settings</SheetTitle>
-        <SheetDescription className="text-left">Choose how Obsidian Vane looks and moves. Higher tiers unlock deeper interface modes.</SheetDescription>
+        <SheetDescription className="text-left">Tune the terminal to your desk. Appearance, access and installation live here.</SheetDescription>
       </SheetHeader>
       <div className="mt-6 space-y-4">
         <DesignSettings />

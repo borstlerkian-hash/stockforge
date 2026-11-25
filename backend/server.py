@@ -92,7 +92,8 @@ def now_iso():
 
 
 def new_user(uid):
-    return {"user_id": uid, "tier": 1, "theme": 1, "design": {"mode": DEFAULT_MODE, "accent": ""},
+    return {"user_id": uid, "tier": 1, "theme": 1,
+            "design": {"mode": DEFAULT_MODE, "accent": "", "motion": DEFAULT_MOTION},
             "watch": list(DEFAULT_WATCH), "alerts": {}, "cash": START_CASH, "positions": [], "orders": [],
             "equity": [{"t": now_iso(), "v": START_CASH}], "created_at": now_iso()}
 
@@ -137,6 +138,10 @@ async def current(request: Request, user: dict = Depends(require_user)) -> dict:
     if design.get("mode") not in MODE_MIN_TIER or MODE_MIN_TIER[design["mode"]] > doc["tier"]:
         design["mode"] = DEFAULT_MODE
     design.setdefault("accent", "")
+    motion = design.get("motion", DEFAULT_MOTION)
+    if isinstance(motion, bool) or not isinstance(motion, (int, float)) or not 0 <= motion <= 1:
+        motion = DEFAULT_MOTION
+    design["motion"] = float(motion)
     if design != doc.get("design"):
         await db.users.update_one({"user_id": doc["user_id"]}, {"$set": {"design": design}})
         doc["design"] = design
@@ -546,10 +551,11 @@ app.include_router(prediction_tracker_router)
 
 # ---------- Design settings (all tiers; individual options are gated) ----------
 DESIGN_ACCENTS = {"", "red", "cyan", "emerald", "amber", "violet"}
+DEFAULT_MOTION = 0.75
 
 
 def _default_design():
-    return {"mode": DEFAULT_MODE, "accent": ""}
+    return {"mode": DEFAULT_MODE, "accent": "", "motion": DEFAULT_MOTION}
 
 
 @api.get("/me/design")
@@ -582,6 +588,11 @@ async def set_design(body: dict, doc: dict = Depends(current)):
         if not isinstance(theme, int) or not 1 <= theme <= tier:
             raise HTTPException(403, "That theme is not unlocked")
         patch["theme"] = theme
+    if "motion" in body:
+        motion = body["motion"]
+        if isinstance(motion, bool) or not isinstance(motion, (int, float)) or not 0 <= motion <= 1:
+            raise HTTPException(400, "Motion must be between 0 and 1")
+        patch["motion"] = float(motion)
     for key in ("font", "compact", "animations"):
         if key in body:
             patch[key] = body[key]
