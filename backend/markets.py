@@ -10,7 +10,7 @@ from data import LIVE_CRYPTO, LIVE_STOCKS, TICKERS
 
 markets_router = APIRouter(prefix="/api")
 _cache = {"t": 0, "data": None}
-_UA = {"User-Agent": "Mozilla/5.0 (StockForge)"}
+_UA = {"User-Agent": "Mozilla/5.0 (ObsidianVane)"}
 
 
 def _bands(price, series):

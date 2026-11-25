@@ -6,6 +6,7 @@ import { Background } from "@/components/sf/Background";
 import { Header, MobileNav } from "@/components/sf/Header";
 import { CommandPalette } from "@/components/sf/CommandPalette";
 import { InstallDrawer } from "@/components/sf/InstallDrawer";
+import { SettingsDrawer } from "@/components/sf/SettingsDrawer";
 import { TickerDialog } from "@/components/sf/TickerDialog";
 import { useNavPages } from "@/components/sf/Header";
 import { AnnouncementBanner } from "@/components/sf/AnnouncementBanner";
@@ -20,8 +21,6 @@ const Advisor = lazy(() => import("@/pages/Advisor"));
 const Paper = lazy(() => import("@/pages/Paper"));
 const Tiers = lazy(() => import("@/pages/Tiers"));
 const Admin = lazy(() => import("@/pages/Admin"));
-import { AdminAccess } from "@/components/sf/AdminAccess";
-import { DesignSettings } from "@/components/sf/DesignSettings";
 import { BtcCheckout } from "@/components/sf/BtcCheckout";
 import { NotificationsSheet } from "@/components/sf/NotificationsSheet";
 const Markets = lazy(() => import("@/pages/Markets"));
@@ -98,10 +97,15 @@ const Boot = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
   if (!show) return null;
-  const siteName = (() => { try { return JSON.parse(localStorage.getItem("sf_site_name") || "null"); } catch { return null; } })() || "STOCKFORGE";
+  const siteName = (() => {
+    try {
+      const stored = JSON.parse(localStorage.getItem("sf_site_name") || "null");
+      return stored && !/stockforge/i.test(stored) ? stored : null;
+    } catch { return null; }
+  })() || "OBSIDIAN VANE";
   const skip = () => { setLeaving(true); setTimeout(finish, 220); };
   return (
-    <div className={`fixed inset-0 z-[100] bg-[#080505] grid place-items-center overflow-hidden cursor-pointer ${leaving ? "boot-out" : ""}`} data-testid="boot-screen" role="status" aria-label="Loading StockForge" onClick={skip}>
+    <div className={`fixed inset-0 z-[100] bg-[#080505] grid place-items-center overflow-hidden cursor-pointer ${leaving ? "boot-out" : ""}`} data-testid="boot-screen" role="status" aria-label="Loading Obsidian Vane" onClick={skip}>
       {/* Red ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px] opacity-30" style={{ background: "radial-gradient(circle, #ef4444 0%, #991b1b 40%, transparent 70%)" }} />
@@ -136,7 +140,7 @@ const Boot = () => {
         </div>
         <div className={`transition-all duration-700 ${stage >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
           <p className="font-disp text-5xl font-bold tracking-[0.2em] text-white" style={{ textShadow: "0 0 40px rgba(239,68,68,0.4), 0 0 80px rgba(239,68,68,0.2)" }}>{siteName}</p>
-          <p className="font-mono text-[10px] tracking-[0.35em] accent mt-2">NEURAL TERMINAL · v3</p>
+          <p className="font-mono text-[10px] tracking-[0.35em] accent mt-2">MARKET INTELLIGENCE · v3</p>
         </div>
         <div className={`transition-all duration-500 ${stage >= 2 ? "opacity-100" : "opacity-0"}`}>
           <p className="font-mono text-xs text-neutral-400 mt-2 caret">{stage >= 3 ? "systems online" : "linking market feeds"}</p>
@@ -150,7 +154,7 @@ const Boot = () => {
         {/* Welcome message */}
         <div className={`transition-all duration-700 ${stage >= 1 ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}>
           <p className="font-disp text-2xl font-bold tracking-[0.15em] text-white mt-4" style={{ textShadow: "0 0 20px rgba(239,68,68,0.4)" }}>WELCOME</p>
-          <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-1">TO THE NEURAL TERMINAL</p>
+          <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-1">MARKET INTELLIGENCE, DELIVERED</p>
         </div>
         <p className="font-mono text-[9px] tracking-[0.3em] text-neutral-600 pt-2">TAP TO SKIP</p>
       </div>
@@ -172,9 +176,10 @@ const PreviewBar = () => {
 };
 
 const Shell = () => {
-  const { page, setPage, themeTier, snap, me, setTheme } = useSF();
+  const { page, setPage, themeTier, interfaceMode, snap, me, setTheme } = useSF();
   const [cmd, setCmd] = useState(false);
   const [install, setInstall] = useState(false);
+  const [settings, setSettings] = useState(false);
   const [bell, setBell] = useState(false);
   const [showTop, setShowTop] = useState(false);
   const pages = useNavPages();
@@ -206,9 +211,9 @@ const Shell = () => {
   return (
     <div className="min-h-screen relative">
       <Boot />
-      <Background tier={themeTier} />
+      <Background tier={themeTier} mode={interfaceMode} />
       <div className="relative z-10">
-        <Header onCmd={() => setCmd(true)} onInstall={() => setInstall(true)} onBell={() => setBell(true)} />
+        <Header onCmd={() => setCmd(true)} onInstall={() => setInstall(true)} onBell={() => setBell(true)} onSettings={() => setSettings(true)} />
         <AnnouncementBanner />
         <PreviewBar />
         <main className="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 pb-32 lg:pb-16">
@@ -218,11 +223,11 @@ const Shell = () => {
           {snap && me ? <Suspense fallback={<PageFallback />}><div key={page} className="page-in"><View /></div></Suspense> : <PageFallback testid="terminal-loading" />}
         </main>
         <footer className="hidden lg:flex max-w-[1600px] mx-auto px-8 py-6 justify-between font-mono text-[10px] tracking-widest text-neutral-600 border-t border-white/5">
-          <span>STOCKFORGE · {snap?.snapshotDate}</span>
+          <span>OBSIDIAN VANE · {snap?.snapshotDate}</span>
           <span>⌘K palette · 1–9 pages · [ ] tier look · esc close</span>
           <span>NOT INVESTMENT ADVICE</span>
         </footer>
-        <MobileNav />
+        <MobileNav onInstall={() => setInstall(true)} onCmd={() => setCmd(true)} onSettings={() => setSettings(true)} />
         {showTop && (
           <button
             onClick={() => window.scrollTo({ top: 0, behavior: "smooth" })}
@@ -235,7 +240,8 @@ const Shell = () => {
         )}
       </div>
       <CommandPalette open={cmd} onOpenChange={setCmd} onInstall={() => setInstall(true)} />
-      <InstallDrawer open={install} onOpenChange={setInstall} extra={<><AdminAccess onDone={() => setInstall(false)} /><DesignSettings /></>} />
+      <InstallDrawer open={install} onOpenChange={setInstall} />
+      <SettingsDrawer open={settings} onOpenChange={setSettings} onInstall={() => setInstall(true)} />
       <TickerDialog />
       <BtcCheckout />
       <NotificationsSheet open={bell} onOpenChange={setBell} />

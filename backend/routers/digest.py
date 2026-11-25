@@ -24,7 +24,7 @@ from data import TIERS
 from lib.ai_errors import friendly_ai_error
 from routers.site import get_settings, list_items
 
-logger = logging.getLogger("stockforge.digest")
+logger = logging.getLogger("obsidian_vane.digest")
 router = APIRouter(prefix="/api/cron")
 
 EMAIL_BASE_URL = "https://integrations.emergentagent.com"  # constant by design: survives deployment
@@ -146,12 +146,12 @@ async def digest_stats() -> dict:
 async def ai_suggestions(stats: dict) -> list[str]:
     s = await get_settings()
     items = await list_items()
-    prompt = (f"StockForge weekly stats: {json.dumps(stats)}. Settings: site '{s.site_name}', banner live={s.banner_live}, "
+    prompt = (f"Obsidian Vane weekly stats: {json.dumps(stats)}. Settings: site '{s.site_name}', banner live={s.banner_live}, "
               f"sections off: {[k for k, v in s.sections.items() if not v]}, featured items: {len(items)}.\n"
               "Give exactly 3 short, concrete improvement suggestions for the admin (max 22 words each). "
               "Return ONLY a JSON array of 3 strings.")
     chat = LlmChat(api_key=os.environ.get("EMERGENT_LLM_KEY", ""), session_id=f"digest-{uuid.uuid4()}",
-                   system_message="You are the StockForge admin analyst. Be specific and practical.").with_model(*MODEL)
+                   system_message="You are the Obsidian Vane admin analyst. Be specific and practical.").with_model(*MODEL)
     raw = await chat.send_message(UserMessage(text=prompt))
     m = re.search(r"\[.*\]", raw, re.S)
     return [str(x)[:200] for x in json.loads(m.group(0))][:3] if m else []

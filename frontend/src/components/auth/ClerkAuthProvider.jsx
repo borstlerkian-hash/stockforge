@@ -15,6 +15,17 @@ const appearance = {
   },
 };
 
+// The Clerk dev instance is named "My Application"; override the visible copy so the
+// sign-in screen stays on-brand until the application name is changed in the dashboard.
+const localization = {
+  signIn: {
+    start: { title: "Welcome to Obsidian Vane", titleCombined: "Welcome to Obsidian Vane" },
+  },
+  signUp: {
+    start: { title: "Create your Obsidian Vane account" },
+  },
+};
+
 const BACKEND_URL = "";
 
 // "loading" → keep the public shell on screen; "off" → static demo (no Clerk);
@@ -71,6 +82,7 @@ export default function ClerkAuthProvider({ children }) {
         publishableKey={config.publishable_key}
         proxyUrl={config.proxy_url || undefined}
         appearance={appearance}
+        localization={localization}
         routerPush={(to) => navigate(to)}
         routerReplace={(to) => navigate(to, { replace: true })}
         signInUrl="/sign-in"

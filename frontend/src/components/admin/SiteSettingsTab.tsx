@@ -32,15 +32,15 @@ const ColorField = ({ label, value, onChange, testid }: { label: string; value: 
 );
 
 export default function SiteSettingsTab() {
-  const sf = useSF() as unknown as { api: SFApi; themeTier: number };
+  const sf = useSF() as unknown as { api: SFApi; themeTier: number; me?: { design?: { mode?: string; accent?: string } } };
   const qc = useQueryClient();
   const { data, isLoading } = useSite();
   const [d, setD] = useState<Draft | null>(null);
 
   useEffect(() => { if (data && !d) { const { updated_at: _u, ...rest } = data.settings; setD(rest); } }, [data, d]);
   // Live preview of the colours while editing; Save persists them for everyone.
-  useEffect(() => { if (d) applyTheme(sf.themeTier, d); }, [d?.brand_primary, d?.brand_secondary, sf.themeTier]); // eslint-disable-line react-hooks/exhaustive-deps
-  useEffect(() => () => { const s = qc.getQueryData<{ settings: SiteSettings }>(SITE_KEY)?.settings; applyTheme(sf.themeTier, s); }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => { if (d) applyTheme(sf.themeTier, d, sf.me?.design); }, [d?.brand_primary, d?.brand_secondary, sf.themeTier, sf.me?.design?.mode, sf.me?.design?.accent]); // eslint-disable-line react-hooks/exhaustive-deps
+  useEffect(() => () => { const s = qc.getQueryData<{ settings: SiteSettings }>(SITE_KEY)?.settings; applyTheme(sf.themeTier, s, sf.me?.design); }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const save = useMutation({
     mutationFn: (body: SiteSettingsUpdate) => sf.api.put<SiteSettings>("/admin/site", body),

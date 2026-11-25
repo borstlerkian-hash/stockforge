@@ -18,7 +18,7 @@ from data import TICKERS
 DATA_DIR = Path(__file__).parent / "datasets"
 NASDAQ_FILE = DATA_DIR / "nasdaq_raw.json"
 CRYPTO_FILE = DATA_DIR / "crypto_top100.json"
-_UA = {"User-Agent": "Mozilla/5.0 (StockForge)", "Accept": "application/json"}
+_UA = {"User-Agent": "Mozilla/5.0 (ObsidianVane)", "Accept": "application/json"}
 STABLES = {"USDT", "USDC", "DAI", "FDUSD", "TUSD", "USDE", "USDS", "PYUSD", "USD1", "BUSD", "USDD", "USDX"}
 
 _cache = {"stocks": None, "stocks_t": 0, "crypto": None, "crypto_t": 0}

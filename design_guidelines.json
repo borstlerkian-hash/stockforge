@@ -1,7 +1,7 @@
 {
   "theme": "dark",
   "archetype": "THE PERFORMANCE PRO / HIGH PRECISION TRADING TERMINAL",
-  "overview": "Comprehensive design refinement guidelines for StockForge dark trading terminal. Preserves the authentic dark aesthetic while introducing softer panel depths, balanced micro-radii, refined contrast ratios, crisp skeleton shimmers, mobile-responsive table-to-card transformations, dynamic live brand CSS variable styling, and a clean Admin AI agent proposal card interface with explicit confirmation flows.",
+  "overview": "Comprehensive design refinement guidelines for the Obsidian Vane dark trading terminal. Preserves the authentic dark aesthetic while introducing softer panel depths, balanced micro-radii, refined contrast ratios, crisp skeleton shimmers, mobile-responsive table-to-card transformations, dynamic live brand CSS variable styling, and a clean Admin AI agent proposal card interface with explicit confirmation flows.",
   "colors": {
     "surfaces": [
       {
@@ -149,7 +149,7 @@
       "live_theme": "Applying changes immediately injects CSS variables to root and syncs to backend"
     },
     "ai_agent_chat": {
-      "model_badge": "Claude Sonnet 4.5",
+      "model_badge": "Advisor",
       "proposal_card_ux": {
         "rule": "Zero direct mutations. Agent responses with actions MUST render an interactive Proposal Card.",
         "card_elements": [
@@ -180,7 +180,7 @@
     "data_testids": "All buttons, inputs, links, toggles, proposal cards, and metrics must include kebab-case data-testid tags"
   },
   "instructions_to_main_agent": [
-    "Retain the existing StockForge terminal look & feel, refining spacing from cramped margins to relaxed tailwind p-4/p-6/p-8 containers.",
+    "Retain the existing Obsidian Vane terminal look & feel, refining spacing from cramped margins to relaxed tailwind p-4/p-6/p-8 containers.",
     "Refine all panel backgrounds using .sf-panel styling with subtle rounded-xl and translucent borders for cohesive modern depth.",
     "Add the site-wide Announcement Banner at top of page when enabled in settings with customizable tones (info, warning, alert).",
     "In Admin Control Centre, provide high-polish settings tabs: Site Settings (with color pickers updating --a and --a2 in real-time), Featured Items CRUD, Users management, and AI Agent Chat.",

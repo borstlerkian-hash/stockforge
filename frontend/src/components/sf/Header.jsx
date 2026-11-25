@@ -66,7 +66,7 @@ export const TickerTape = () => {
 export const navPages = (me, settings) => (me?.is_admin ? [...PAGES, { id: "admin", label: "Admin" }] : PAGES).filter((p) => sectionOn(settings, p.id));
 export const useNavPages = () => { const { me } = useSF(); const settings = useSite().data?.settings; return navPages(me, settings); };
 
-export const Header = ({ onCmd, onInstall, onBell }) => {
+export const Header = ({ onCmd, onInstall, onBell, onSettings }) => {
   const { page, setPage, snap, me, themeTier, setDepositOpen } = useSF();
   const tier = snap?.tiers[(me?.tier || 1) - 1];
   const pages = useNavPages();
@@ -80,7 +80,7 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
             <span className="relative w-5 h-5 rotate-45 border-2 animate-spin" style={{ borderColor: "var(--a)", animationDuration: "8s" }} />
           </span>
           <span className="text-left leading-none">
-            <span className="font-disp font-bold tracking-[0.18em] text-base sm:text-lg block" data-testid="header-site-name">{site?.site_name || "STOCKFORGE"}</span>
+            <span className="font-disp font-bold tracking-[0.12em] sm:tracking-[0.18em] text-base sm:text-lg block" data-testid="header-site-name">{site?.site_name || "OBSIDIAN VANE"}</span>
             <span className="font-mono text-[9px] tracking-[0.3em] accent" data-testid="header-tier-sub">{snap?.tiers[themeTier - 1]?.name} TERMINAL</span>
           </span>
         </button>
@@ -94,12 +94,12 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
           ))}
         </nav>
         <div className="flex items-center gap-2 ml-auto lg:ml-0">
-          <button className="sf-btn sf-btn-sm" onClick={onCmd} data-testid="command-palette-button" aria-label="Open command palette"><Search size={14} /><span className="hidden md:inline">Search</span><kbd className="hidden md:inline text-[10px] text-neutral-500">⌘K</kbd></button>
+          <button className="sf-btn sf-btn-sm hidden sm:inline-flex" onClick={onCmd} data-testid="command-palette-button" aria-label="Open command palette"><Search size={14} /><span className="hidden md:inline">Search</span><kbd className="hidden md:inline text-[10px] text-neutral-500">⌘K</kbd></button>
           <button className="sf-btn sf-btn-sm" onClick={() => setDepositOpen(true)} data-testid="header-deposit-button"><span className="accent">$</span><span className="hidden sm:inline">Deposit</span></button>
           <BellButton onClick={onBell} />
           <NetPill />
           <button className="sf-btn sf-btn-sm sf-btn-p hidden sm:inline-flex" onClick={onInstall} data-testid="get-app-button"><Download size={14} /><span className="hidden sm:inline">Get app</span></button>
-  {me && me.tier >= 5 && <button className="sf-btn sf-btn-sm" onClick={onInstall} data-testid="settings-button" aria-label="Design settings"><Settings size={14} /><span className="hidden sm:inline">Settings</span></button>}
+          {me && <button className="sf-btn sf-btn-sm" onClick={onSettings} data-testid="settings-button" aria-label="Terminal settings"><Settings size={14} /><span className="hidden sm:inline">Settings</span></button>}
           <Clock />
           <TierSwitch />
           {tier && <span className="hidden md:inline font-mono text-[10px] px-2 py-1 border border-[var(--a)] accent tracking-widest" data-testid="tier-badge">T{tier.id} {tier.name}</span>}
@@ -111,7 +111,7 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
   );
 };
 
-export const MobileNav = () => {
+export const MobileNav = ({ onInstall, onCmd, onSettings }) => {
   const { page, setPage } = useSF();
   const pages = useNavPages();
   const [more, setMore] = useState(false);
@@ -169,6 +169,18 @@ const PRIMARY = ["home", "markets", "dash", "ai", "watch"];
                   </button>
                 );
               })}
+            </div>
+            {/* Phone users have no header buttons for these, so keep them here. */}
+            <div className="grid grid-cols-3 gap-2 mt-3">
+              <button className="sf-btn !px-2" onClick={() => { setMore(false); onCmd?.(); }} data-testid="mobile-more-search">
+                <Search size={14} /> Search
+              </button>
+              <button className="sf-btn !px-2" onClick={() => { setMore(false); onSettings?.(); }} data-testid="mobile-more-settings">
+                <Settings size={14} /> Settings
+              </button>
+              <button className="sf-btn sf-btn-p !px-2" onClick={() => { setMore(false); onInstall?.(); }} data-testid="mobile-more-install">
+                <Download size={14} /> Install
+              </button>
             </div>
           </div>
         </div>

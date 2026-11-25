@@ -1,4 +1,4 @@
-"""Admin AI agent (Claude Sonnet 4.5). It answers and PROPOSES changes; nothing is applied
+"""Admin AI agent. It answers and PROPOSES changes; nothing is applied
 until an admin clicks Apply on the proposal card. It can't touch code — only settings and data."""
 
 import json
@@ -20,12 +20,12 @@ from models.site import (SECTION_IDS, AgentChatIn, AgentMessage, FeaturedItemIn,
 from routers.site import (create_item, delete_item, delete_user, get_settings, list_items, set_user_admin,
                           set_user_tier, update_item, update_settings)
 
-logger = logging.getLogger("stockforge.agent")
+logger = logging.getLogger("obsidian_vane.agent")
 MODEL = ("anthropic", "claude-sonnet-4-5-20250929")
 DESTRUCTIVE = {"delete_item", "delete_user"}
 BLOCK = re.compile(r"```proposals\s*(.*?)```", re.S)
 
-SYSTEM = f"""You are the StockForge Admin Agent, an assistant inside the admin control centre of StockForge,
+SYSTEM = f"""You are the Obsidian Vane Admin Agent, an assistant inside the admin control centre of Obsidian Vane,
 a trading-terminal web app. You help the admin understand the app's state, answer questions and suggest improvements.
 You CANNOT edit code. You can only PROPOSE changes to site settings, featured items and users. The admin reviews
 each proposal as a card and clicks Apply or Dismiss — so never claim a change is done.

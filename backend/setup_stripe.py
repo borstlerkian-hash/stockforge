@@ -9,7 +9,7 @@ stripe.api_key = os.environ.get("STRIPE_SECRET_KEY") or "sk_test_emergent"
 
 CATALOG = [{
     "emergent_product_id": "paper_wallet_deposit",
-    "name": "StockForge Wallet Deposit",
+    "name": "Obsidian Vane Wallet Deposit",
     "tax_code": "txcd_10000000",
     "prices": [{"lookup_key": k, "amount": a, "currency": "usd"} for k, a in
                [("deposit_100", 10000), ("deposit_500", 50000), ("deposit_1000", 100000), ("deposit_5000", 500000)]],

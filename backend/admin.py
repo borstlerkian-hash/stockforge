@@ -41,9 +41,9 @@ def _zip_source() -> bytes:
                 if f.startswith(".env") or f in SKIP_FILES or f.endswith((".pyc", ".log")):
                     continue
                 p = Path(root) / f
-                z.write(p, Path("stockforge") / p.relative_to(APP_ROOT))
-        z.writestr("stockforge/SECRETS_README.txt",
-                   "Secrets (.env files) are NOT included.\n"
+                z.write(p, Path("obsidian-vane") / p.relative_to(APP_ROOT))
+        z.writestr("obsidian-vane/SECRETS_README.txt",
+                   "Obsidian Vane — secrets (.env files) are NOT included.\n"
                    "backend/.env needs: MONGO_URL, DB_NAME, CORS_ORIGINS, CLERK_PUBLISHABLE_KEY, CLERK_SECRET_KEY,\n"
                    "EMERGENT_LLM_KEY, ADMIN_CODE, ADMIN_PASSPHRASE, ADMIN_EMAIL\n"
                    "frontend/.env needs: REACT_APP_BACKEND_URL\n")
@@ -133,7 +133,7 @@ def build_admin_router(current, require_admin):
     @router.get("/download")
     async def download(_: dict = Depends(require_admin)):
         data = _zip_source()
-        name = f"stockforge-source-{datetime.now(timezone.utc):%Y%m%d}.zip"
+        name = f"obsidian-vane-source-{datetime.now(timezone.utc):%Y%m%d}.zip"
         return StreamingResponse(io.BytesIO(data), media_type="application/zip",
                                  headers={"Content-Disposition": f'attachment; filename="{name}"'})
 

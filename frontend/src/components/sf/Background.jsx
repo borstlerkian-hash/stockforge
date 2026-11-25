@@ -1,24 +1,45 @@
 import { memo, useEffect, useRef } from "react";
 import { TIER_THEMES } from "@/lib/theme";
 
+// Each mode changes how much ambient motion the canvas draws. Professional is intentionally
+// static; Smooth/Water keep a calm drift; Sci-Fi/Singularity add links and speed.
+const PARTICLE_FX = {
+  professional: { count: 0, speed: 0, links: false, alpha: 0 },
+  smooth: { count: 0.55, speed: 0.55, links: false, alpha: 0.85 },
+  water: { count: 0.8, speed: 0.35, links: false, alpha: 1 },
+  scifi: { count: 1.1, speed: 1.25, links: true, alpha: 1.15 },
+  singularity: { count: 1.5, speed: 1.6, links: true, alpha: 1.3 },
+};
+
+const ORB_SPEED = { professional: 1, smooth: 1.3, water: 1.9, scifi: 0.55, singularity: 0.38 };
+
 // Canvas particles: frame-rate independent (delta-time), DPR-aware, paused while the tab is hidden,
 // and free of per-frame allocations / Math.random calls so it stays cheap on low-end GPUs.
-const Particles = ({ tier }) => {
+const Particles = ({ tier, mode }) => {
   const ref = useRef(null);
   useEffect(() => {
     const cv = ref.current;
     const ctx = cv.getContext("2d", { alpha: true });
     const t = TIER_THEMES[tier - 1];
+    const fx = PARTICLE_FX[mode] || PARTICLE_FX.smooth;
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     const dpr = Math.min(window.devicePixelRatio || 1, 1.5);
     let w = 0, h = 0, raf = 0, last = 0, resizeRaf = 0;
 
+    if (!fx.count) {
+      // Clear any pixels left over from a previous mode, then leave the canvas idle.
+      cv.width = Math.round(window.innerWidth * dpr);
+      cv.height = Math.round(window.innerHeight * dpr);
+      ctx.clearRect(0, 0, cv.width, cv.height);
+      return;
+    }
+
     let pts = [];
     const buildParticles = () => {
-      const count = w < 700 ? Math.round(t.particles / 2) : t.particles;
+      const count = Math.round((w < 700 ? t.particles / 2 : t.particles) * fx.count);
       pts = Array.from({ length: count }, () => ({
         x: Math.random() * w, y: Math.random() * h, r: Math.random() * 1.6 + 0.4,
-        vx: (Math.random() - 0.5) * t.speed, vy: -Math.random() * t.speed - 0.05, ph: Math.random() * 6.28,
+        vx: (Math.random() - 0.5) * t.speed * fx.speed, vy: -Math.random() * t.speed * fx.speed - 0.05, ph: Math.random() * 6.28,
         alt: Math.random() > 0.9,
       }));
     };
@@ -29,7 +50,7 @@ const Particles = ({ tier }) => {
       buildParticles();
     };
     resize();
-    const baseAlpha = 0.4 + t.glow * 0.6;
+    const baseAlpha = (0.4 + t.glow * 0.6) * fx.alpha;
 
     const draw = (time) => {
       // Speeds are authored per 60fps frame; scale by elapsed time so 120/144Hz screens don't run fast
@@ -51,7 +72,7 @@ const Particles = ({ tier }) => {
           ctx.fill();
         }
       }
-      if (tier >= 8) {
+      if (fx.links && tier >= 7) {
         ctx.globalAlpha = 0.08;
         ctx.strokeStyle = t.a;
         ctx.beginPath();
@@ -78,8 +99,8 @@ const Particles = ({ tier }) => {
       document.removeEventListener("visibilitychange", onVis);
       window.removeEventListener("resize", onResize);
     };
-  }, [tier]);
-  return <canvas ref={ref} className="fixed inset-0 pointer-events-none z-0" aria-hidden="true" />;
+  }, [tier, mode]);
+  return <canvas ref={ref} className="sf-particles fixed inset-0 pointer-events-none z-0" aria-hidden="true" />;
 };
 
 const ORBS = [
@@ -90,26 +111,27 @@ const ORBS = [
 
 // Orbs are soft radial gradients animated with transform + opacity only (compositor-driven). The old
 // version used `filter: blur(150px)` on three huge animated layers, which forced a re-blur every frame.
-export const Background = memo(({ tier }) => {
+export const Background = memo(({ tier, mode = "smooth" }) => {
   const g = TIER_THEMES[tier - 1].glow;
   const style = { "--lo": 0.1 + g * 0.2, "--hi": 0.22 + g * 0.35, "--ring": 0.5 * g + 0.1 };
+  const orbSpeed = ORB_SPEED[mode] || 1;
   return (
-    <div aria-hidden="true" data-testid="pulsing-background" style={style}>
+    <div aria-hidden="true" data-testid="pulsing-background" data-interface-mode={mode} style={style}>
       <div className="fixed inset-0 pointer-events-none z-0 overflow-hidden">
         {ORBS.map((o, i) => (
           <div
             key={i}
             className={`sf-orb absolute rounded-full ${o.cls}`}
-            style={{ background: `radial-gradient(circle closest-side, ${o.color}, transparent 100%)`, animationDuration: `${o.dur}s`, animationDelay: `${o.delay}s` }}
+            style={{ background: `radial-gradient(circle closest-side, ${o.color}, transparent 100%)`, animationDuration: `${o.dur * orbSpeed}s`, animationDelay: `${o.delay}s` }}
           />
         ))}
         <div
           className="sf-ring absolute left-1/2 top-[38%] w-[340px] h-[340px] -translate-x-1/2 -translate-y-1/2 rounded-full border"
-          style={{ borderColor: "var(--a-line)" }}
+          style={{ borderColor: "var(--a-line)", animationDuration: `${6 * orbSpeed}s` }}
         />
       </div>
       <div className="grid-field" />
-      <Particles tier={tier} />
+      <Particles tier={tier} mode={mode} />
       <div className="scanlines" />
       <div className="grain" />
     </div>

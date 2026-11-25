@@ -157,7 +157,7 @@ def build_features_router(current, gate):
         else:
             rows = [[s, i + 1, p] for s in me["watch"] if s in by for i, p in enumerate(by[s]["hist"])]
             cols = ["sym", "point", "price"]
-        return table_response(rows, cols, f"stockforge-{kind}", fmt)
+        return table_response(rows, cols, f"obsidian-vane-{kind}", fmt)
 
     @r.post("/import")
     async def import_table(mode: Literal["watchlist", "portfolio"] = Query("watchlist"), file: UploadFile = File(...),

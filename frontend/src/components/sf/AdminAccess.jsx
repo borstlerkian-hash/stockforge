@@ -13,7 +13,7 @@ export const useSourceDownload = () => {
     try {
       const r = await fetch(`${API}/admin/download`, { headers: { Authorization: `Bearer ${await getToken()}` } });
       if (!r.ok) throw new Error(r.status === 403 ? "Admin only" : `Download failed (${r.status})`);
-      const name = (r.headers.get("content-disposition") || "").match(/filename="(.+)"/)?.[1] || "stockforge-source.zip";
+      const name = (r.headers.get("content-disposition") || "").match(/filename="(.+)"/)?.[1] || "obsidian-vane-source.zip";
       const url = URL.createObjectURL(await r.blob());
       Object.assign(document.createElement("a"), { href: url, download: name }).click();
       URL.revokeObjectURL(url);

@@ -2,6 +2,7 @@ import { createContext, useCallback, useContext, useEffect, useMemo, useRef, use
 import { toast } from "sonner";
 import { publicGet, useApi } from "@/lib/sfapi";
 import { applyTheme } from "@/lib/theme";
+import { DEFAULT_MODE, modeMinTier } from "@/lib/interfaceModes";
 import { useSite } from "@/lib/site";
 
 const Ctx = createContext(null);
@@ -88,18 +89,18 @@ export function SFProvider({ children }) {
   const nt = useNotifications(api, refreshMe);
   useEffect(() => { refreshMe(); }, [refreshMe]);
 
-  // Apply design preferences when user data loads
-  useEffect(() => {
-    if (me?.design?.accent) {
-      const colors = { red: "#ef4444", cyan: "#00F0FF", emerald: "#10B981", amber: "#F59E0B", violet: "#8B5CF6" };
-      const c = colors[me.design.accent];
-      if (c) document.documentElement.style.setProperty("--a", c);
-    }
-  }, [me?.design?.accent]);
-
   const themeTier = preview || me?.theme || 1;
   const site = useSite().data?.settings;
-  useEffect(() => applyTheme(themeTier, site), [themeTier, site]);
+
+  // If a membership lapses, its exotic interface mode falls back to the free default.
+  const savedMode = me?.design?.mode || DEFAULT_MODE;
+  const modeGate = snap?.modeGates?.[savedMode] ?? modeMinTier(savedMode);
+  const interfaceMode = modeGate <= (me?.tier || 1) ? savedMode : DEFAULT_MODE;
+  const designAccent = me?.design?.accent || "";
+
+  useEffect(() => {
+    applyTheme(themeTier, site, { mode: interfaceMode, accent: designAccent });
+  }, [themeTier, site, interfaceMode, designAccent]);
 
   const setPage = useCallback((p) => {
     // Instant jump: a smooth scroll fighting the page remount reads as jank.
@@ -144,9 +145,9 @@ export function SFProvider({ children }) {
 
   // Memoized so unrelated provider re-renders don't re-render every consumer.
   const value = useMemo(() => ({
-    api, snap, refreshSnap, me, setMe, refreshMe, page, setPage, preview, setPreview, themeTier, can, setTheme, upgrade,
+    api, snap, refreshSnap, me, setMe, refreshMe, page, setPage, preview, setPreview, themeTier, interfaceMode, can, setTheme, upgrade,
     checkout, setCheckout, bySym, ticker, openTicker, predictSym, openPredict, depositOpen, setDepositOpen, tradeSym, setTradeSym, toggleWatch, ...mk, ...nt,
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  }), [api, snap, refreshSnap, me, refreshMe, page, setPage, preview, themeTier, can, setTheme, upgrade, checkout, bySym, ticker, predictSym, depositOpen, tradeSym, toggleWatch, mk.markets, mk.marketsLoading, mk.refreshMarkets, nt.notes, nt.refreshNotes, nt.markRead]);
+  }), [api, snap, refreshSnap, me, refreshMe, page, setPage, preview, themeTier, interfaceMode, can, setTheme, upgrade, checkout, bySym, ticker, predictSym, depositOpen, tradeSym, toggleWatch, mk.markets, mk.marketsLoading, mk.refreshMarkets, nt.notes, nt.refreshNotes, nt.markRead]);
   return <Ctx.Provider value={value}>{children}</Ctx.Provider>;
 }

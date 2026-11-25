@@ -17,6 +17,7 @@ from universe import equity_of
 
 stripe.api_key = os.environ.get("STRIPE_SECRET_KEY") or "sk_test_emergent"
 STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
+CARD_ENABLED = bool(os.environ.get("STRIPE_SECRET_KEY"))  # no live/test key configured → hide card option
 TAX_MODE = "full"  # sandbox country is SMP-supported and deposit credits are a digital good
 
 # server-side packages: lookup_key -> USD credited (Stripe price amount matches)
@@ -43,7 +44,9 @@ async def _credit(uid: str, amount: float, kind: str, note: str, ref: str = ""):
         raise HTTPException(404, "Account not found")
     eq = equity_of(doc["cash"], doc["positions"])
     await db.users.update_one({"user_id": uid}, {"$push": {"equity": {"$each": [{"t": now_iso(), "v": eq}], "$slice": -300}}})
-    txn = {"id": str(uuid.uuid4()), "user_id": uid, "t": now_iso(), "kind": kind, "amount": amount, "note": note, "ref": ref,
+    stamp = datetime.now(timezone.utc)
+    ref = ref or f"OV{stamp:%Y%m%d}-{uuid.uuid4().hex[:8].upper()}"
+    txn = {"id": str(uuid.uuid4()), "user_id": uid, "t": stamp.isoformat(), "kind": kind, "amount": amount, "note": note, "ref": ref,
            "balance": doc["cash"]}
     await db.wallet_txns.insert_one(dict(txn))
     return txn
@@ -90,7 +93,7 @@ def build_wallet_router(current):
     async def wallet(me: dict = Depends(current)):
         txns = await db.wallet_txns.find({"user_id": me["user_id"]}, {"_id": 0}).sort("t", -1).to_list(50)
         return {"cash": me["cash"], "deposits_total": me.get("deposits_total", 0), "withdrawals_total": me.get("withdrawals_total", 0),
-                "txns": txns, "packages": [{"id": k, "amount": v} for k, v in PACKAGES.items()], "card_enabled": bool(stripe.api_key)}
+                "txns": txns, "packages": [{"id": k, "amount": v} for k, v in PACKAGES.items()], "card_enabled": CARD_ENABLED}
 
     @r.post("/wallet/deposit")
     async def deposit(body: AmountIn, me: dict = Depends(current)):

@@ -18,7 +18,7 @@ export const ImportExport = ({ open, onOpenChange }) => {
   const need = snap?.gates.export;
 
   const doExport = async (kind, fmt) => {
-    try { await download(`/export/${kind}?fmt=${fmt}`, `stockforge-${kind}.${fmt}`); toast.success(`${kind} exported as ${fmt.toUpperCase()}`); }
+    try { await download(`/export/${kind}?fmt=${fmt}`, `obsidian-vane-${kind}.${fmt}`); toast.success(`${kind} exported as ${fmt.toUpperCase()}`); }
     catch (e) { toast.error(e.message); }
   };
   const doImport = async (file) => {

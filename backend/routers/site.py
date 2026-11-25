@@ -19,6 +19,28 @@ LABELS = {"site_name": "site name", "tagline": "tagline", "brand_primary": "prim
           "banner_text": "banner message", "banner_tone": "banner tone", "banner_starts_at": "banner start",
           "banner_ends_at": "banner end", "sections": "app sections"}
 
+# Only the exact old factory strings are replaced, so anything an admin customised is left alone.
+LEGACY_SITE_DEFAULTS = {
+    "site_name": "STOCKFORGE",
+    "tagline": "NEURAL TERMINAL",
+    "landing_headline": "The market, forged into one glowing terminal.",
+    "landing_sub": ("Every NASDAQ company and the top 100 cryptos, Monte Carlo predictions with support & resistance, "
+                    "deposits to invest, an AI advisor and ten membership tiers that transform the whole interface."),
+}
+
+
+async def migrate_legacy_brand():
+    """Rewrite untouched legacy branding to Obsidian Vane on startup."""
+    doc = await db.site_settings.find_one({"id": SITE_ID}, {"_id": 0}) or {}
+    stale = [k for k, old in LEGACY_SITE_DEFAULTS.items() if doc.get(k) == old]
+    if not stale:
+        return
+    fresh = SiteSettings()
+    upd = {k: getattr(fresh, k) for k in stale}
+    await db.site_settings.update_one({"id": SITE_ID}, {"$set": upd}, upsert=True)
+    await log_change({"user_id": "", "email": ""},
+                     "Renamed default site branding to Obsidian Vane", "system", "migrate_legacy_brand")
+
 
 async def log_change(actor: dict, summary: str, source: str = "admin", action: str = ""):
     await db.admin_log.insert_one({"t": now_iso(), "by": actor.get("user_id", ""), "by_email": actor.get("email", ""),

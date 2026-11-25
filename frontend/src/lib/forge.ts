@@ -1,4 +1,4 @@
-// Typed client for the StockForge upgrade endpoints. Auth is Clerk: the session token rides
+// Typed client for the Obsidian Vane trading endpoints. Auth is Clerk: the session token rides
 // as a Bearer header (same contract as the original lib/sfapi.js). Interfaces mirror the
 // dicts returned by backend/universe.py, predict.py and wallet.py — keep them in sync.
 import { useMemo } from "react";
@@ -95,7 +95,7 @@ export interface Prediction {
   updated: number;
 }
 
-export interface WalletTxn { id: string; t: string; kind: "instant" | "card" | "withdraw"; amount: number; note: string; balance: number }
+export interface WalletTxn { id: string; t: string; kind: "instant" | "card" | "withdraw"; amount: number; note: string; balance: number; ref?: string }
 export interface Wallet {
   cash: number;
   deposits_total: number;

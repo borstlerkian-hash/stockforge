@@ -96,7 +96,7 @@ const OrderLog = () => {
   const { me } = useSF();
   const download = () => {
     const url = URL.createObjectURL(new Blob([csv(me.orders)], { type: "text/csv" }));
-    Object.assign(document.createElement("a"), { href: url, download: "stockforge-orders.csv" }).click();
+    Object.assign(document.createElement("a"), { href: url, download: "obsidian-vane-orders.csv" }).click();
     URL.revokeObjectURL(url);
   };
   return (

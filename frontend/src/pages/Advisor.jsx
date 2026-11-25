@@ -56,7 +56,7 @@ export default function Advisor() {
 
   return (
     <section data-testid="page-ai">
-      <Hero kicker="NEURAL DESK" title="Advisor" sub="Claude-powered · reads the session snapshot and your paper desk · not advice">
+      <Hero kicker="NEURAL DESK" title="Advisor" sub="AI-powered · reads the session snapshot and your paper desk · not advice">
         <button className="sf-btn" onClick={clear} data-testid="chat-clear-button"><Trash2 size={14} /> Clear</button>
       </Hero>
       <div className="grid lg:grid-cols-12 gap-4">

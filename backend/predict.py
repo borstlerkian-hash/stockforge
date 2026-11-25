@@ -1,5 +1,5 @@
 """Advanced prediction engine: fat-tailed Monte Carlo cones, support/resistance, probabilities,
-technical signal stack — per symbol and timeframe. Claude writes the narrative on top."""
+technical signal stack — per symbol and timeframe. The advisor writes the narrative on top."""
 import math
 import time
 from typing import Literal, Optional
@@ -9,7 +9,7 @@ import requests
 from fastapi import HTTPException
 from starlette.concurrency import run_in_threadpool
 
-_UA = {"User-Agent": "Mozilla/5.0 (StockForge)"}
+_UA = {"User-Agent": "Mozilla/5.0 (ObsidianVane)"}
 _cache: dict = {}
 TTL = 300
 N_PATHS = 4000

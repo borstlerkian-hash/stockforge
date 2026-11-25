@@ -358,7 +358,7 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
                 </div>
                 {briefErr && <p className="font-mono text-xs text-rose-400" data-testid="prediction-ai-error">{briefErr}</p>}
                 {brief ? <p className="whitespace-pre-wrap text-sm leading-relaxed text-slate-200" data-testid="prediction-ai-text">{brief}</p>
-                  : !briefErr && <p className="text-sm text-slate-500">Claude reads the simulation, levels and signal stack and writes a plain-language verdict with triggers and risk. Uses 1 AI credit.</p>}
+                  : !briefErr && <p className="text-sm text-slate-500">The AI reads the simulation, levels and signal stack and writes a plain-language verdict with triggers and risk. Uses 1 AI credit.</p>}
                 <p className="font-mono text-[10px] text-slate-600 mt-3">Probabilistic model output from historical volatility — not investment advice. Past behaviour does not guarantee future results.</p>
               </Hud>
             </div>

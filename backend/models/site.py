@@ -20,14 +20,15 @@ def now_iso() -> str:
 
 
 class SiteSettings(BaseModel):
-    site_name: str = Field("STOCKFORGE", min_length=1, max_length=40)
-    tagline: str = Field("NEURAL TERMINAL", max_length=60)
+    site_name: str = Field("OBSIDIAN VANE", min_length=1, max_length=40)
+    tagline: str = Field("MARKET INTELLIGENCE", max_length=60)
     brand_primary: str = Field("", pattern=HEX)
     brand_secondary: str = Field("", pattern=HEX)
-    landing_headline: str = Field("The market, forged into one glowing terminal.", max_length=140)
+    landing_headline: str = Field("The market, distilled into one clear signal.", max_length=140)
     landing_sub: str = Field(
-        "Every NASDAQ company and the top 100 cryptos, Monte Carlo predictions with support & resistance, "
-        "deposits to invest, an AI advisor and ten membership tiers that transform the whole interface.",
+        "Obsidian Vane puts every NASDAQ company and the top 100 cryptos in one terminal — Monte Carlo "
+        "forecasts with support & resistance, an advisor, funded accounts to invest, and ten membership "
+        "tiers that reshape the whole interface.",
         max_length=400)
     home_headline: str = Field("Market Feed", max_length=80)
     home_sub: str = Field("Session momentum · tap any name for a deep dive", max_length=200)

@@ -1,6 +1,6 @@
 {
-  "name": "StockForge Neural Terminal",
-  "short_name": "StockForge",
+  "name": "Obsidian Vane Market Terminal",
+  "short_name": "ObsidianVane",
   "description": "Tiered stock & crypto terminal with live markets, AI advisor and paper trading.",
   "start_url": "/",
   "scope": "/",

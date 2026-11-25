@@ -4,16 +4,28 @@ TIERS = [
     {"id": 1, "name": "ROOKIE", "price": "$0", "amount_cents": 0, "tag": "Core desk", "look": "Plain ledger", "perks": ["Feed (4 names)", "Quotes", "Watchlist", "Live markets"]},
     {"id": 2, "name": "STARTER", "price": "$19/mo", "amount_cents": 1900, "tag": "Paper desk", "look": "Blueprint dots", "perks": ["Paper trading", "Dot-grid field"]},
     {"id": 3, "name": "TRADER", "price": "$49/mo", "amount_cents": 4900, "tag": "Day desk", "look": "Scanline day desk", "perks": ["Full feed", "Watchlist export"]},
-    {"id": 4, "name": "PRO", "price": "$99/mo", "amount_cents": 9900, "tag": "Pro terminal", "look": "Split frames", "perks": ["Heat map", "Order log"]},
-    {"id": 5, "name": "ELITE", "price": "$149/mo", "amount_cents": 14900, "tag": "Catalyst desk", "look": "HUD brackets", "perks": ["Catalyst scanner", "Elite glow"]},
+    {"id": 4, "name": "PRO", "price": "$99/mo", "amount_cents": 9900, "tag": "Pro terminal", "look": "Split frames · Water mode", "perks": ["Heat map", "Order log", "Water finish"]},
+    {"id": 5, "name": "ELITE", "price": "$149/mo", "amount_cents": 14900, "tag": "Catalyst desk", "look": "HUD brackets · Water mode", "perks": ["Catalyst scanner", "Elite glow"]},
     {"id": 6, "name": "ALPHA", "price": "$249/mo", "amount_cents": 24900, "tag": "Alpha HUD", "look": "Dual HUD", "perks": ["Session intel", "Dual accent"]},
-    {"id": 7, "name": "QUANTUM", "price": "$399/mo", "amount_cents": 39900, "tag": "Deep brief", "look": "Iridescent frames", "perks": ["Deep advisor brief", "Quantum finish"]},
-    {"id": 8, "name": "NEURAL", "price": "$599/mo", "amount_cents": 59900, "tag": "Neural HUD", "look": "Max glass", "perks": ["Max glass", "Neural rings"]},
+    {"id": 7, "name": "QUANTUM", "price": "$399/mo", "amount_cents": 39900, "tag": "Deep brief", "look": "Iridescent frames · Sci-Fi mode", "perks": ["Deep advisor brief", "Quantum finish", "Sci-Fi mode"]},
+    {"id": 8, "name": "NEURAL", "price": "$599/mo", "amount_cents": 59900, "tag": "Neural HUD", "look": "Max glass · Sci-Fi mode", "perks": ["Max glass", "Neural rings"]},
     {"id": 9, "name": "GOD", "price": "$999/mo", "amount_cents": 99900, "tag": "Gold terminal", "look": "Gold foil", "perks": ["Gold theme", "Ambient wash"]},
-    {"id": 10, "name": "SINGULARITY", "price": "$2,499/mo", "amount_cents": 249900, "tag": "Ultimate", "look": "Void singularity", "perks": ["Every feature", "Peak particles"]},
+    {"id": 10, "name": "SINGULARITY", "price": "$2,499/mo", "amount_cents": 249900, "tag": "Ultimate", "look": "Void singularity · Singularity mode", "perks": ["Every feature", "Peak particles", "Singularity mode"]},
 ]
 
 GATES = {"paper": 2, "fullFeed": 3, "export": 3, "heat": 4, "orderLog": 4, "catalysts": 5, "intel": 6, "deepBrief": 7}
+
+# Interface modes are visual only; the gates below decide which modes a member can select.
+# Keep this in sync with frontend/src/lib/interfaceModes.js.
+INTERFACE_MODES = [
+    {"id": "professional", "name": "Professional", "min_tier": 1},
+    {"id": "smooth", "name": "Smooth", "min_tier": 1},
+    {"id": "water", "name": "Water", "min_tier": 4},
+    {"id": "scifi", "name": "Sci-Fi", "min_tier": 7},
+    {"id": "singularity", "name": "Singularity", "min_tier": 10},
+]
+MODE_MIN_TIER = {m["id"]: m["min_tier"] for m in INTERFACE_MODES}
+DEFAULT_MODE = "smooth"
 
 DASHBOARD = {
     "stats": [
@@ -76,7 +88,7 @@ def _fetch_live_ticker_prices():
     for t in TICKERS:
         sym = t["sym"]
         try:
-            r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}", timeout=8, headers={"User-Agent": "Mozilla/5.0 (StockForge)"}, params={"range": "1d", "interval": "5m"})
+            r = requests.get(f"https://query1.finance.yahoo.com/v8/finance/chart/{sym}", timeout=8, headers={"User-Agent": "Mozilla/5.0 (ObsidianVane)"}, params={"range": "1d", "interval": "5m"})
             r.raise_for_status()
             res = r.json()["chart"]["result"][0]
             meta = res["meta"]
@@ -105,6 +117,7 @@ def snapshot():
         "snapshotDate": time.strftime("%b %d, %Y"),
         "tiers": [{k: v for k, v in t.items() if k != "amount_cents"} for t in TIERS],
         "gates": GATES,
+        "modeGates": MODE_MIN_TIER,
         "dashboard": DASHBOARD,
         "tickers": tickers,
         "mag7": MAG7,

@@ -74,7 +74,7 @@ export default function Live() {
         <div className="flex flex-wrap gap-2">
           <select className="sf-input" value={mode} onChange={(e) => setMode(e.target.value)} data-testid="analyst-mode-select">
             <option value="quant">Built-in quant model (instant)</option>
-            <option value="ai">StockForge AI · Claude (deep analysis)</option>
+            <option value="ai">Obsidian Vane AI · deep analysis</option>
           </select>
           <select className="sf-input" value={sym} onChange={(e) => setSym(e.target.value)} data-testid="analyst-asset-select">
             {assets.map((a) => <option key={a.sym} value={a.sym}>{a.sym} · {a.name}</option>)}
@@ -86,7 +86,7 @@ export default function Live() {
         </div>
         {(out || busy) && <pre className={`mt-5 whitespace-pre-wrap font-mono text-[13px] leading-relaxed text-neutral-200 border-l-2 border-[var(--a)] pl-4 ${busy ? "caret" : ""}`} data-testid="analyst-output">{out}</pre>}
       </div>
-      <p className="font-mono text-[10px] text-neutral-600 mt-4 max-w-4xl leading-relaxed">Crypto from CoinGecko, stocks from Yahoo Finance, refreshed every minute through the StockForge server. Last prices are saved so the app still opens offline. Bands are a ±1σ envelope from the last 7 days of hourly prices. No model can predict price reliably.</p>
+      <p className="font-mono text-[10px] text-neutral-600 mt-4 max-w-4xl leading-relaxed">Crypto from CoinGecko, stocks from Yahoo Finance, refreshed every minute through the Obsidian Vane server. Last prices are saved so the app still opens offline. Bands are a ±1σ envelope from the last 7 days of hourly prices. No model can predict price reliably.</p>
     </section>
   );
 }

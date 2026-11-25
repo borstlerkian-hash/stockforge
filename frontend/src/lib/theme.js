@@ -1,3 +1,5 @@
+import { DEFAULT_MODE, INTERFACE_MODES } from "./interfaceModes";
+
 export const TIER_THEMES = [
   { a: "#d4d4d4", a2: "#737373", glow: 0.12, particles: 14, speed: 0.15, blur: 0 },
   { a: "#3b82f6", a2: "#22d3ee", glow: 0.2, particles: 26, speed: 0.2, blur: 4 },
@@ -9,6 +11,23 @@ export const TIER_THEMES = [
   { a: "#d946ef", a2: "#22d3ee", glow: 0.8, particles: 80, speed: 0.55, blur: 20 },
   { a: "#eab308", a2: "#f59e0b", glow: 0.9, particles: 90, speed: 0.45, blur: 16 },
   { a: "#ffffff", a2: "#8b5cf6", glow: 1.0, particles: 120, speed: 0.7, blur: 22 },
+];
+
+// Accent colours are opt-in. An empty accent means "use the tier / site colour".
+export const ACCENTS = {
+  red: "#ef4444",
+  cyan: "#00F0FF",
+  emerald: "#10B981",
+  amber: "#F59E0B",
+  violet: "#8B5CF6",
+};
+
+export const ACCENT_OPTIONS = [
+  { id: "red", label: "Red" },
+  { id: "cyan", label: "Cyan" },
+  { id: "emerald", label: "Emerald" },
+  { id: "amber", label: "Amber" },
+  { id: "violet", label: "Violet" },
 ];
 
 export const rgba = (hex, a) => {
@@ -29,7 +48,9 @@ export const themeVars = (tier) => {
 };
 
 // brand = site settings; a set brand_primary / brand_secondary overrides the tier accent for everyone.
-export const applyTheme = (tier, brand) => {
+// design = per-user appearance: { mode, accent }. A saved accent wins over the site brand, but only
+// when the member explicitly picked one, so empty accent keeps the shared brand / tier colour.
+export const applyTheme = (tier, brand, design = {}) => {
   const root = document.documentElement;
   const vars = themeVars(tier);
   const hex = (v) => typeof v === "string" && /^#[0-9a-fA-F]{6}$/.test(v);
@@ -39,12 +60,20 @@ export const applyTheme = (tier, brand) => {
       "--a-line": rgba(brand.brand_primary, 0.18 + glow * 0.12), "--a-glow": rgba(brand.brand_primary, 0.15 + glow * 0.35) });
   }
   if (brand && hex(brand.brand_secondary)) vars["--a2"] = brand.brand_secondary;
+  const accent = ACCENTS[design?.accent] || (hex(design?.accent) ? design.accent : "");
+  if (accent) {
+    const glow = (TIER_THEMES[tier - 1] || TIER_THEMES[0]).glow;
+    Object.assign(vars, { "--a": accent, "--a-soft": rgba(accent, 0.1),
+      "--a-line": rgba(accent, 0.18 + glow * 0.12), "--a-glow": rgba(accent, 0.15 + glow * 0.35) });
+  }
   Object.entries(vars).forEach(([k, v]) => root.style.setProperty(k, v));
+  const mode = INTERFACE_MODES.some((m) => m.id === design?.mode) ? design.mode : DEFAULT_MODE;
   root.dataset.tier = String(tier);
-  root.classList.toggle("fx-scan", tier >= 3);
-  root.classList.toggle("fx-hud", tier >= 5);
-  root.classList.toggle("fx-irid", tier >= 7 && tier !== 9);
-  root.classList.toggle("fx-gold", tier === 9);
+  root.dataset.mode = mode;
+  root.classList.toggle("fx-scan", mode !== "professional" && tier >= 3);
+  root.classList.toggle("fx-hud", mode !== "professional" && tier >= 5);
+  root.classList.toggle("fx-irid", mode !== "professional" && tier >= 7 && tier !== 9);
+  root.classList.toggle("fx-gold", mode !== "professional" && tier === 9);
 };
 
 export const PAGES = [

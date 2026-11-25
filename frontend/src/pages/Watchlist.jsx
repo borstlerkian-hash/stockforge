@@ -62,7 +62,7 @@ export default function Watchlist() {
   const clearAlert = async (s) => { await api.del(`/alerts/${s}`); setMe((m) => { const al = { ...m.alerts }; delete al[s]; return { ...m, alerts: al }; }); };
   const exportList = async () => {
     if (!can("export")) return upgrade(snap.gates.export);
-    try { const d = await api.get("/export"); download("stockforge-watchlist.json", JSON.stringify(d, null, 2), "application/json"); toast.success("Watchlist exported"); }
+    try { const d = await api.get("/export"); download("obsidian-vane-watchlist.json", JSON.stringify(d, null, 2), "application/json"); toast.success("Watchlist exported"); }
     catch (err) { toast.error(err.message); }
   };
 

@@ -18,14 +18,14 @@ from pydantic import BaseModel
 from db import db
 from clerk_auth import require_user
 
-logger = logging.getLogger("stockforge.prediction_tracker")
+logger = logging.getLogger("obsidian_vane.prediction_tracker")
 
 router = APIRouter(prefix="/api")
 
 # Timeframe -> hours until evaluation
 _TF_HOURS = {"1D": 24, "1W": 168, "1M": 720, "3M": 2160}
 
-_UA = {"User-Agent": "Mozilla/5.0 (StockForge)"}
+_UA = {"User-Agent": "Mozilla/5.0 (ObsidianVane)"}
 
 
 def _fetch_price(sym: str, kind: str) -> Optional[float]:
@@ -205,7 +205,7 @@ async def ai_prediction_review(me: dict = Depends(require_user)):
     if not recent_errors:
         recent_errors = "  (none above 5% error)"
 
-    prompt = """You are the StockForge Prediction Supervisor AI. Review the following prediction accuracy data and provide actionable insights.
+    prompt = """You are the Obsidian Vane prediction supervisor. Review the following prediction accuracy data and provide actionable insights.
 
 PERFORMANCE SUMMARY:
 - Total predictions: %d

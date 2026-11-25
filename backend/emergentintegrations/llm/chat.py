@@ -1,6 +1,6 @@
 """Drop-in replacement for the unavailable `emergentintegrations` package.
 
-StockForge only imports four names from it:
+Obsidian Vane only imports four names from it:
 
     LlmChat(api_key=..., session_id=..., system_message=...).with_model(provider, model)
     chat.stream_message(UserMessage(text=...))  -> yields TextDelta / StreamDone

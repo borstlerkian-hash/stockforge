@@ -107,7 +107,7 @@ async def check_payment(p, txid):
         raise HTTPException(404, "Transaction not found on the blockchain yet — check the ID or wait a minute")
     received = sum(v.get("value", 0) for v in tx.get("vout", []) if v.get("scriptpubkey_address") == p["btc_address"])
     if received == 0:
-        raise HTTPException(400, "That transaction does not pay the StockForge receiving address")
+        raise HTTPException(400, "That transaction does not pay the Obsidian Vane receiving address")
     confirmed = bool((tx.get("status") or {}).get("confirmed"))
     enough = received >= p["amount_sats"]
     status = "confirmed" if confirmed and enough else "seen"
@@ -275,6 +275,6 @@ def build_billing_router(current, require_admin):
             cols = ["id", "created_at", "email", "user_id", "tier", "tier_name", "usd_cents", "amount_btc", "btc_usd",
                     "status", "txid", "received_sats", "confirmations", "period_ends_at", "note"]
             docs = await db.btc_payments.find({}, {"_id": 0}).sort("created_at", -1).to_list(10000)
-        return table_response([[d.get(c) for c in cols] for d in docs], cols, f"stockforge-{kind}", fmt)
+        return table_response([[d.get(c) for c in cols] for d in docs], cols, f"obsidian-vane-{kind}", fmt)
 
     return r

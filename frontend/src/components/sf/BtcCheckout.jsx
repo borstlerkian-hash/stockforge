@@ -131,7 +131,7 @@ export const BtcCheckout = () => {
                     )}
                   </div>
                 )}
-                <p className="text-[11px] text-neutral-500 leading-relaxed">Funds go straight to the owner's wallet — StockForge never holds coins or keys. Each payment covers one month; renew with a new payment. If anything goes wrong, the admin can approve your payment by hand.</p>
+                <p className="text-[11px] text-neutral-500 leading-relaxed">Funds go straight to the owner's wallet — Obsidian Vane never holds coins or keys. Each payment covers one month; renew with a new payment. If anything goes wrong, the admin can approve your payment by hand.</p>
               </>
             )}
             {done && (

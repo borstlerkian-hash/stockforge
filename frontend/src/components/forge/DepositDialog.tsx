@@ -2,10 +2,15 @@ import { useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { ArrowDownToLine, ArrowUpFromLine, CreditCard, Wallet as WalletIcon, X, Zap } from "lucide-react";
+import {
+  ArrowDownToLine, ArrowRight, ArrowUpFromLine, BadgeCheck, CircleCheck, CreditCard, FileCheck2,
+  Info, LockKeyhole, ShieldCheck, TrendingUp, Wallet as WalletIcon, X, Zap,
+} from "lucide-react";
 import { fmtUsd, useForgeApi, type CardCheckout, type Wallet, type WalletTxn } from "@/lib/forge";
+import { useSF } from "@/context/SFContext";
 
 const QUICK = [1000, 5000, 10000, 50000];
+const MAX = 1_000_000;
 
 export interface DepositDialogProps {
   open: boolean;
@@ -18,13 +23,20 @@ type Tab = "instant" | "card" | "withdraw";
 export default function DepositDialog({ open, onClose, onFunds }: DepositDialogProps) {
   const api = useForgeApi();
   const qc = useQueryClient();
+  const { me, can, setPage } = useSF() as unknown as {
+    me?: { email?: string } | null;
+    can: (gate: string) => boolean;
+    setPage: (page: string) => void;
+  };
   const [tab, setTab] = useState<Tab>("instant");
   const [amount, setAmount] = useState("10000");
   const [pkg, setPkg] = useState("deposit_500");
   const [busy, setBusy] = useState(false);
+  const [receipt, setReceipt] = useState<WalletTxn | null>(null);
 
   const w = useQuery({ queryKey: ["wallet"], queryFn: () => api.get<Wallet>("/wallet"), enabled: open });
   const wallet = w.data && !w.isError ? w.data : undefined;
+  const cardReady = wallet?.card_enabled === true;
 
   const done = async (msg: string) => {
     toast.success(msg);
@@ -34,14 +46,20 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
 
   const submit = async () => {
     const n = Number(amount);
-    if (tab !== "card" && (!n || n <= 0)) return toast.error("Enter an amount above $0");
+    if (tab !== "card") {
+      if (!Number.isFinite(n) || n <= 0) return toast.error("Enter an amount above $0");
+      if (n > MAX) return toast.error(`Maximum per transfer is ${fmtUsd(MAX, 0)}`);
+      if (tab === "withdraw" && wallet && n > wallet.cash + 1e-6) return toast.error("Withdrawal exceeds available cash");
+    }
     setBusy(true);
     try {
       if (tab === "instant") {
-        await api.post("/wallet/deposit", { amount: n });
+        const r = await api.post<{ txn: WalletTxn }>("/wallet/deposit", { amount: n });
+        setReceipt(r.txn);
         await done(`${fmtUsd(n, 0)} credited to buying power`);
       } else if (tab === "withdraw") {
-        await api.post("/wallet/withdraw", { amount: n });
+        const r = await api.post<{ txn: WalletTxn }>("/wallet/withdraw", { amount: n });
+        setReceipt(r.txn);
         await done(`${fmtUsd(n, 0)} withdrawal processed`);
       } else {
         const r = await api.post<CardCheckout>("/wallet/card/checkout", { package_id: pkg, origin_url: window.location.origin });
@@ -55,9 +73,24 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
     }
   };
 
-  const TabBtn = ({ id, icon, label }: { id: Tab; icon: React.ReactNode; label: string }) => (
-    <button onClick={() => setTab(id)} data-testid={`deposit-tab-${id}`} role="tab" aria-selected={tab === id}
-      className={`flex-1 font-mono text-[11px] tracking-widest uppercase py-2.5 border flex items-center justify-center gap-2 transition-[background-color,border-color,color] duration-150 ${tab === id ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"}`}>
+  const switchTab = (id: Tab) => { setTab(id); setReceipt(null); };
+  const openInvesting = () => {
+    onClose();
+    setPage(can("paper") ? "trade" : "tiers");
+  };
+
+  const TabBtn = ({ id, icon, label, disabled }: { id: Tab; icon: React.ReactNode; label: string; disabled?: boolean }) => (
+    <button
+      onClick={() => switchTab(id)}
+      disabled={disabled}
+      title={disabled ? "Card checkout is not configured for this deployment" : undefined}
+      data-testid={`deposit-tab-${id}`}
+      role="tab"
+      aria-selected={tab === id}
+      className={`flex-1 font-mono text-[11px] tracking-widest uppercase py-2.5 border flex items-center justify-center gap-2 transition-colors duration-150 disabled:opacity-40 disabled:pointer-events-none ${
+        tab === id ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"
+      }`}
+    >
       {icon}{label}
     </button>
   );
@@ -65,67 +98,168 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
   return (
     <AnimatePresence>
       {open && (
-        <motion.div className="fixed inset-0 z-[85] grid place-items-center bg-black/70 backdrop-blur-sm p-3" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-          onMouseDown={(e) => e.target === e.currentTarget && onClose()} data-testid="deposit-overlay">
-          <motion.div role="dialog" aria-modal="true" aria-label="Deposit funds" className="relative w-full max-w-lg sf-panel !bg-[#0B0F19] p-5 max-h-[92vh] overflow-y-auto"
-            initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.97, opacity: 0 }} transition={{ type: "spring", damping: 24, stiffness: 300 }}
-            data-testid="deposit-dialog">
-            <div className="flex items-start justify-between mb-4">
+        <motion.div
+          className="fixed inset-0 z-[85] grid place-items-center bg-black/75 backdrop-blur-sm p-3"
+          initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+          onMouseDown={(e) => e.target === e.currentTarget && onClose()}
+          data-testid="deposit-overlay"
+        >
+          <motion.div
+            role="dialog" aria-modal="true" aria-label="Deposit funds"
+            className="relative w-full max-w-lg sf-panel !bg-[#0B0F19] p-5 max-h-[92vh] overflow-y-auto"
+            initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.97, opacity: 0 }}
+            transition={{ type: "spring", damping: 24, stiffness: 300 }}
+            data-testid="deposit-dialog"
+          >
+            <div className="flex items-start justify-between mb-4 gap-3">
               <div>
-                <p className="kicker flex items-center gap-2"><WalletIcon size={12} /> FORGE WALLET</p>
+                <p className="kicker flex items-center gap-2"><ShieldCheck size={13} /> VANE WALLET</p>
                 <h3 className="font-disp text-2xl font-bold mt-1">Fund your account</h3>
-                <p className="font-mono text-xs text-neutral-500 mt-1">Buying power <b className="text-white" data-testid="deposit-cash">{wallet ? fmtUsd(wallet.cash) : "—"}</b> · deposited {wallet ? fmtUsd(wallet.deposits_total, 0) : "—"}</p>
+                <p className="font-mono text-xs text-neutral-500 mt-1">
+                  Buying power <b className="text-white" data-testid="deposit-cash">{wallet ? fmtUsd(wallet.cash) : "—"}</b>
+                  <span className="mx-2 text-neutral-700">·</span>
+                  deposited {wallet ? fmtUsd(wallet.deposits_total, 0) : "—"}
+                </p>
               </div>
               <button className="sf-btn sf-btn-sm" onClick={onClose} aria-label="Close" data-testid="deposit-close-button"><X size={14} /></button>
             </div>
-            <div className="flex gap-1 mb-4" role="tablist">
-              <TabBtn id="instant" icon={<Zap size={12} />} label="Instant" />
-              <TabBtn id="card" icon={<CreditCard size={12} />} label="Card" />
-              <TabBtn id="withdraw" icon={<ArrowUpFromLine size={12} />} label="Withdraw" />
+
+            <div className="flex flex-wrap items-center gap-2 mb-4">
+              <span className="sf-pill flex items-center gap-1"><BadgeCheck size={11} /> VERIFIED SESSION</span>
+              <span className="sf-pill flex items-center gap-1"><LockKeyhole size={11} /> ENCRYPTED</span>
+              <span className="font-mono text-[10px] text-neutral-600 ml-auto">LEDGER · {receipt?.ref || "READY"}</span>
             </div>
 
-            {tab !== "card" ? (
-              <div className="space-y-3">
-                <p className="text-sm text-neutral-400">{tab === "instant" ? "Paper funds land instantly in your buying power — perfect for testing strategies at scale." : "Move paper cash out of your buying power (simulated bank transfer)."}</p>
-                <div className="grid grid-cols-4 gap-2">
-                  {QUICK.map((q) => (
-                    <button key={q} onClick={() => setAmount(String(q))} data-testid={`deposit-quick-${q}`}
-                      className={`font-mono text-xs py-2 border transition-colors duration-150 ${Number(amount) === q ? "border-[var(--a)] text-white" : "border-white/10 text-neutral-400 hover:text-white"}`}>${q >= 1000 ? `${q / 1000}k` : q}</button>
-                  ))}
+            <div className="flex gap-1 mb-4" role="tablist">
+              <TabBtn id="instant" icon={<Zap size={12} />} label="Add funds" />
+              <TabBtn id="card" icon={<CreditCard size={12} />} label="Card" disabled={wallet ? !cardReady : false} />
+              <TabBtn id="withdraw" icon={<ArrowUpFromLine size={12} />} label="Transfer out" />
+            </div>
+
+            {receipt && tab !== "card" && (
+              <div className="mb-4 rounded-xl border border-emerald-500/30 bg-emerald-500/[0.07] p-3" data-testid="deposit-receipt">
+                <div className="flex items-center gap-2">
+                  <CircleCheck size={16} className="text-emerald-400" />
+                  <p className="font-mono text-xs font-bold text-emerald-300">
+                    {tab === "withdraw" ? "Transfer recorded" : "Deposit recorded"}
+                  </p>
+                  <span className="ml-auto font-mono text-[10px] text-neutral-500">{new Date(receipt.t).toLocaleTimeString()}</span>
                 </div>
-                <label className="block"><span className="font-mono text-[10px] text-neutral-500 tracking-widest">AMOUNT (USD)</span>
-                  <input className="sf-input w-full mt-1 !text-lg" type="number" min="1" step="any" value={amount} onChange={(e) => setAmount(e.target.value)} data-testid="deposit-amount-input" /></label>
-              </div>
-            ) : (
-              <div className="space-y-3">
-                <p className="text-sm text-neutral-400">Pay by card through Stripe (test mode). Use card <b className="font-mono text-white">4242 4242 4242 4242</b>, any future date and CVC. Funds credit after payment is confirmed.</p>
-                <div className="grid grid-cols-2 gap-2">
-                  {(wallet?.packages ?? [{ id: "deposit_100", amount: 100 }, { id: "deposit_500", amount: 500 }, { id: "deposit_1000", amount: 1000 }, { id: "deposit_5000", amount: 5000 }]).map((p) => (
-                    <button key={p.id} onClick={() => setPkg(p.id)} data-testid={`card-package-${p.id}`}
-                      className={`font-mono py-3 border transition-colors duration-150 ${pkg === p.id ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"}`}>{fmtUsd(p.amount, 0)}</button>
-                  ))}
+                <div className="grid grid-cols-2 gap-x-3 gap-y-1 mt-2 font-mono text-[11px] text-neutral-400">
+                  <span>Reference</span><span className="text-right text-white">{receipt.ref || receipt.id.slice(0, 8).toUpperCase()}</span>
+                  <span>Amount</span><span className={`text-right ${receipt.amount >= 0 ? "bull" : "bear"}`}>{receipt.amount >= 0 ? "+" : ""}{fmtUsd(receipt.amount, 0)}</span>
+                  <span>New balance</span><span className="text-right text-white">{fmtUsd(receipt.balance)}</span>
                 </div>
+                <button className="sf-btn sf-btn-sm w-full mt-3" onClick={openInvesting} data-testid="deposit-invest-button">
+                  <TrendingUp size={13} /> {can("paper") ? "Invest these funds" : "See investing tiers"} <ArrowRight size={13} />
+                </button>
               </div>
             )}
 
-            <button className="sf-btn sf-btn-p w-full !py-3 mt-4" onClick={submit} disabled={busy} data-testid="deposit-submit-btn">
-              {tab === "withdraw" ? <ArrowUpFromLine size={14} /> : <ArrowDownToLine size={14} />}
-              {busy ? "Processing…" : tab === "instant" ? `Deposit ${fmtUsd(Number(amount) || 0, 0)}` : tab === "withdraw" ? `Withdraw ${fmtUsd(Number(amount) || 0, 0)}` : "Continue to secure checkout"}
+            {tab !== "card" ? (
+              <div className="space-y-3">
+                <p className="text-sm text-neutral-400 flex gap-2">
+                  <Info size={14} className="shrink-0 mt-0.5 text-neutral-500" />
+                  {tab === "instant"
+                    ? "Instant credit adds simulated buying power to your trading account. No bank account is debited."
+                    : "Move simulated cash out of your buying power. This is a ledger entry, not a bank transfer."}
+                </p>
+                <div className="grid grid-cols-4 gap-2">
+                  {QUICK.map((q) => (
+                    <button
+                      key={q} onClick={() => setAmount(String(q))} data-testid={`deposit-quick-${q}`}
+                      className={`font-mono text-xs py-2 border transition-colors duration-150 ${
+                        Number(amount) === q ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"
+                      }`}
+                    >
+                      ${q >= 1000 ? `${q / 1000}k` : q}
+                    </button>
+                  ))}
+                </div>
+                <label className="block">
+                  <span className="font-mono text-[10px] text-neutral-500 tracking-widest">AMOUNT (USD)</span>
+                  <input
+                    className="sf-input w-full mt-1 !text-lg" type="number" min="1" max={MAX} step="any"
+                    value={amount} onChange={(e) => setAmount(e.target.value)} data-testid="deposit-amount-input"
+                  />
+                </label>
+                <div className="flex items-center justify-between font-mono text-[11px] text-neutral-500 border-t border-white/5 pt-3">
+                  <span>{tab === "withdraw" ? "Balance after transfer" : "Buying power after credit"}</span>
+                  <span className="text-white">
+                    {fmtUsd((wallet?.cash ?? 0) + (tab === "withdraw" ? -1 : 1) * (Number(amount) || 0))}
+                  </span>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {!cardReady ? (
+                  <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-3 text-sm text-amber-200/80">
+                    Card checkout isn't configured for this deployment yet. Use <b>Add funds</b> to credit your simulation instantly.
+                  </div>
+                ) : (
+                  <>
+                    <p className="text-sm text-neutral-400">
+                      Pay by card through Stripe's secure checkout. This deployment uses test mode — use card
+                      <b className="font-mono text-white"> 4242 4242 4242 4242</b>, any future date and CVC.
+                    </p>
+                    <div className="grid grid-cols-2 gap-2">
+                      {(wallet?.packages ?? [{ id: "deposit_100", amount: 100 }, { id: "deposit_500", amount: 500 }, { id: "deposit_1000", amount: 1000 }, { id: "deposit_5000", amount: 5000 }]).map((p) => (
+                        <button
+                          key={p.id} onClick={() => setPkg(p.id)} data-testid={`card-package-${p.id}`}
+                          className={`font-mono py-3 border transition-colors duration-150 ${
+                            pkg === p.id ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"
+                          }`}
+                        >
+                          {fmtUsd(p.amount, 0)}
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            <button
+              className="sf-btn sf-btn-p w-full !py-3 mt-4"
+              onClick={submit}
+              disabled={busy || (tab === "card" && !cardReady)}
+              data-testid="deposit-submit-btn"
+            >
+              {tab === "withdraw" ? <ArrowUpFromLine size={14} /> : tab === "card" ? <CreditCard size={14} /> : <ArrowDownToLine size={14} />}
+              {busy
+                ? "Processing…"
+                : tab === "withdraw"
+                  ? `Transfer out ${fmtUsd(Number(amount) || 0, 0)}`
+                  : tab === "card"
+                    ? "Continue to secure checkout"
+                    : `Deposit ${fmtUsd(Number(amount) || 0, 0)}`}
             </button>
 
+            {!receipt && (
+              <button className="sf-btn w-full mt-2 !py-2.5" onClick={openInvesting} data-testid="deposit-invest-link">
+                <TrendingUp size={14} /> {can("paper") ? "Open investing desk" : "Explore investing tiers"} <ArrowRight size={13} />
+              </button>
+            )}
+
             <div className="mt-5">
-              <div className="lab">RECENT ACTIVITY</div>
+              <div className="lab flex items-center gap-2"><FileCheck2 size={13} /> RECENT ACTIVITY</div>
               <div className="max-h-40 overflow-y-auto space-y-1" data-testid="wallet-txns">
-                {(wallet?.txns ?? []).map((t: WalletTxn) => (
+                {(wallet?.txns ?? []).map((t) => (
                   <div key={t.id} className="flex items-center gap-2 font-mono text-xs py-1 border-b border-white/5">
                     <span className="text-neutral-600 w-20">{new Date(t.t).toLocaleDateString()}</span>
-                    <span className="flex-1 text-neutral-400">{t.note}</span>
+                    <span className="flex-1 text-neutral-400 truncate">
+                      {t.note} {t.ref && <span className="text-neutral-600">· {t.ref}</span>}
+                    </span>
                     <span className={t.amount >= 0 ? "bull" : "bear"}>{t.amount >= 0 ? "+" : ""}{fmtUsd(t.amount, 0)}</span>
                   </div>
                 ))}
-                {wallet && !wallet.txns.length && <p className="font-mono text-xs text-neutral-600">No deposits yet.</p>}
+                {wallet && !wallet.txns.length && <p className="font-mono text-xs text-neutral-600">No transfers yet.</p>}
               </div>
             </div>
+
+            <p className="font-mono text-[9px] leading-relaxed text-neutral-600 mt-4 border-t border-white/5 pt-3">
+              {me?.email ? `Account ${me.email} · ` : ""}Every credit is recorded once in your ledger. Simulated funds are for practice only — not investment advice.
+            </p>
           </motion.div>
         </motion.div>
       )}

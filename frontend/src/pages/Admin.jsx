@@ -23,7 +23,7 @@ const Badge = ({ s, testid }) => <span className={`font-mono text-[10px] upperca
 
 const ExportButtons = ({ kind }) => {
   const { download } = useFiles();
-  const go = async (fmt) => { try { await download(`/admin/export/${kind}?fmt=${fmt}`, `stockforge-${kind}.${fmt}`); } catch (e) { toast.error(e.message); } };
+  const go = async (fmt) => { try { await download(`/admin/export/${kind}?fmt=${fmt}`, `obsidian-vane-${kind}.${fmt}`); } catch (e) { toast.error(e.message); } };
   return ["csv", "xlsx"].map((f) => <button key={f} className="sf-btn sf-btn-sm" onClick={() => go(f)} data-testid={`admin-export-${kind}-${f}`}><Download size={12} />{kind} {f}</button>);
 };
 

@@ -21,12 +21,13 @@ from billing import build_billing_router, ensure_billing_indexes, get_tiers
 from features import ALERT_SYMS, ai_limit, ai_used, build_features_router, ensure_feature_indexes, live_prices, notify, use_ai
 from db import client, db
 from clerk_auth import clerk_router, require_user
-from data import DEFAULT_WATCH, GATES, PRICES, START_CASH, TICKERS, TIERS, snapshot, snapshot_context
+from data import (DEFAULT_MODE, DEFAULT_WATCH, GATES, MODE_MIN_TIER, PRICES, START_CASH, TICKERS,
+                  TIERS, snapshot, snapshot_context)
 from markets import get_markets, markets_router
 from universe import LAST_PX, equity_of, find_asset, in_universe, price_of, universe_router, warm
 from predict import TF, Timeframe, narrative_context, predict
 from wallet import build_wallet_router, ensure_wallet_indexes
-from routers.site import build_site_router
+from routers.site import build_site_router, migrate_legacy_brand
 from routers.prediction_tracker import router as prediction_tracker_router, log_prediction
 from lib.ai_errors import friendly_ai_error, is_budget_error
 from routers.agent import build_agent_router
@@ -35,7 +36,7 @@ from emergentintegrations.llm.chat import LlmChat, StreamDone, TextDelta, UserMe
 
 app = FastAPI()
 api = APIRouter(prefix="/api")
-logger = logging.getLogger("stockforge")
+logger = logging.getLogger("obsidian_vane")
 
 
 class ResponseHeadersMiddleware:
@@ -91,8 +92,8 @@ def now_iso():
 
 
 def new_user(uid):
-    return {"user_id": uid, "tier": 1, "theme": 1, "watch": list(DEFAULT_WATCH), "alerts": {},
-            "cash": START_CASH, "positions": [], "orders": [],
+    return {"user_id": uid, "tier": 1, "theme": 1, "design": {"mode": DEFAULT_MODE, "accent": ""},
+            "watch": list(DEFAULT_WATCH), "alerts": {}, "cash": START_CASH, "positions": [], "orders": [],
             "equity": [{"t": now_iso(), "v": START_CASH}], "created_at": now_iso()}
 
 
@@ -103,7 +104,7 @@ def _is_admin_email(uid):
         return False
     try:
         r = requests.get(f"https://api.clerk.com/v1/users/{uid}", timeout=10,
-                         headers={"Authorization": f"Bearer {os.environ.get('CLERK_SECRET_KEY', '')}", "User-Agent": "stockforge"})
+                         headers={"Authorization": f"Bearer {os.environ.get('CLERK_SECRET_KEY', '')}", "User-Agent": "obsidian-vane"})
         r.raise_for_status()
         return any(e["email_address"].lower() in admins and (e.get("verification") or {}).get("status") == "verified"
                    for e in r.json().get("email_addresses", []))
@@ -114,7 +115,7 @@ def _is_admin_email(uid):
 def _clerk_profile(uid):
     try:
         r = requests.get(f"https://api.clerk.com/v1/users/{uid}", timeout=8,
-                         headers={"Authorization": f"Bearer {os.environ.get('CLERK_SECRET_KEY', '')}", "User-Agent": "stockforge"})
+                         headers={"Authorization": f"Bearer {os.environ.get('CLERK_SECRET_KEY', '')}", "User-Agent": "obsidian-vane"})
         r.raise_for_status()
         j = r.json()
         emails = j.get("email_addresses") or []
@@ -132,6 +133,13 @@ async def current(request: Request, user: dict = Depends(require_user)) -> dict:
         doc = await db.users.find_one({"user_id": user["user_id"]}, {"_id": 0})
     for k, v in new_user(user["user_id"]).items():
         doc.setdefault(k, v)
+    design = dict(doc.get("design") or {})
+    if design.get("mode") not in MODE_MIN_TIER or MODE_MIN_TIER[design["mode"]] > doc["tier"]:
+        design["mode"] = DEFAULT_MODE
+    design.setdefault("accent", "")
+    if design != doc.get("design"):
+        await db.users.update_one({"user_id": doc["user_id"]}, {"$set": {"design": design}})
+        doc["design"] = design
     if not doc.get("admin_email_checked"):
         upd = {"admin_email_checked": True}
         if await run_in_threadpool(_is_admin_email, user["user_id"]):
@@ -183,7 +191,7 @@ async def public_me(doc):
 
 @api.get("/")
 async def root():
-    return {"message": "StockForge API"}
+    return {"message": "Obsidian Vane API"}
 
 
 @api.get("/snapshot")
@@ -320,7 +328,7 @@ async def paper_reset(doc: dict = Depends(gate("paper"))):
 
 # ---------- AI ----------
 ADVISOR_SYSTEM = (
-    "You are the StockForge Neural Advisor, a sharp, concise markets analyst inside a trading terminal. "
+    "You are the Obsidian Vane Advisor, a sharp, concise markets analyst inside a trading terminal. "
     "Use the session snapshot and the user's paper account for context. Prefer short paragraphs and tight bullet lists, "
     "cite tickers and levels, flag risks. Never promise returns. End with a one-line reminder that this is not investment advice "
     "only when giving trade ideas."
@@ -449,7 +457,7 @@ async def analyst(body: AnalystIn, doc: dict = Depends(current)):
            f"Downsampled 7-day hourly closes: {series}.")
     q = body.question or "Trend, risks and what the 7-day data suggests."
     chat = make_chat(f"analyst-{doc['user_id']}-{uuid.uuid4()}",
-                     "You are StockForge AI Analyst. Give a crisp technical read: trend, momentum, key levels, volatility regime, "
+                     "You are the Obsidian Vane analyst. Give a crisp technical read: trend, momentum, key levels, volatility regime, "
                      "scenarios with rough probabilities, risks. Max 200 words, plain text with short labeled lines. Not investment advice.")
     return sse(stream_llm(chat, f"{ctx}\n\nQuestion: {q}"))
 
@@ -481,7 +489,7 @@ async def prediction_narrative(sym: str, body: NarrativeIn, doc: dict = Depends(
     p = await predict(asset, body.tf)
     await use_ai(doc)
     chat = make_chat(f"forecast-{doc['user_id']}-{uuid.uuid4()}",
-                     "You are StockForge Quantum Forecaster. You receive a Monte Carlo forecast and a technical signal stack. "
+                     "You are the Obsidian Vane forecaster. You receive a Monte Carlo forecast and a technical signal stack. "
                      "Write a sharp briefing in plain text with these labeled lines: VERDICT, BEST CASE, AVERAGE CASE, WORST CASE, "
                      "KEY LEVELS, TRIGGERS, RISK. Quote the numbers you are given (prices, probabilities, levels); never invent data. "
                      "Max 190 words. End with: Not investment advice.")
@@ -517,7 +525,7 @@ async def insights(body: InsightIn, doc: dict = Depends(current)):
             "Comment on the PREDICTION: explain what the model bias and confidence imply, whether recent price action supports it, "
             "the bull and bear case, and what would invalidate it.")
     chat = make_chat(f"insight-{doc['user_id']}-{uuid.uuid4()}",
-                     "You are StockForge AI Insights. Explain markets in clear, plain language for everyday investors. "
+                     "You are Obsidian Vane insights. Explain markets in clear, plain language for everyday investors. "
                      "Short paragraphs, no markdown headers, max 170 words. End with: Not investment advice.")
     return sse(stream_llm(chat, "\n".join(ctx) + "\n\n" + task))
 
@@ -536,28 +544,57 @@ app.include_router(build_agent_router(require_admin))
 app.include_router(digest_router)
 app.include_router(prediction_tracker_router)
 
-# ---------- Design settings (tier 5+) ----------
+# ---------- Design settings (all tiers; individual options are gated) ----------
+DESIGN_ACCENTS = {"", "red", "cyan", "emerald", "amber", "violet"}
+
+
+def _default_design():
+    return {"mode": DEFAULT_MODE, "accent": ""}
+
+
 @api.get("/me/design")
 async def get_design(doc: dict = Depends(current)):
-    """Get user's design preferences (tier 5+ only)."""
-    if (doc.get("tier") or 1) < 5:
-        raise HTTPException(403, "Design customization requires Tier 5 (PRO) or higher")
-    return doc.get("design", {"accent": "red", "theme": "dark", "font": "default"})
+    """Get the member's appearance preferences, with safe defaults."""
+    return {**_default_design(), **(doc.get("design") or {})}
+
 
 @api.put("/me/design")
 async def set_design(body: dict, doc: dict = Depends(current)):
-    """Set user's design preferences (tier 5+ only)."""
-    if (doc.get("tier") or 1) < 5:
-        raise HTTPException(403, "Design customization requires Tier 5 (PRO) or higher")
-    allowed_keys = {"accent", "theme", "font", "compact", "animations"}
-    design = {k: v for k, v in body.items() if k in allowed_keys}
+    """Merge appearance changes. Interface modes are tier-gated; accents start at T5."""
+    tier = doc.get("tier") or 1
+    patch = {}
+    if "mode" in body:
+        mode = body["mode"]
+        if mode not in MODE_MIN_TIER:
+            raise HTTPException(400, "Unknown interface mode")
+        if MODE_MIN_TIER[mode] > tier:
+            raise HTTPException(403, f"This mode unlocks at tier {MODE_MIN_TIER[mode]}")
+        patch["mode"] = mode
+    if "accent" in body:
+        accent = body["accent"]
+        if accent not in DESIGN_ACCENTS:
+            raise HTTPException(400, "Unknown accent")
+        if accent and tier < 5:
+            raise HTTPException(403, "Accent colours unlock at tier 5")
+        patch["accent"] = accent
+    if "theme" in body:
+        theme = body["theme"]
+        if not isinstance(theme, int) or not 1 <= theme <= tier:
+            raise HTTPException(403, "That theme is not unlocked")
+        patch["theme"] = theme
+    for key in ("font", "compact", "animations"):
+        if key in body:
+            patch[key] = body[key]
+    if not patch:
+        raise HTTPException(400, "Nothing to change")
+    design = {**_default_design(), **(doc.get("design") or {}), **patch}
     await db.users.update_one({"user_id": doc["user_id"]}, {"$set": {"design": design}})
     return design
 
 # Lightweight health check (used by uptime monitors / keep-alive pings).
 @app.get("/api/health", include_in_schema=False)
 async def health():
-    return {"ok": True, "service": "stockforge"}
+    return {"ok": True, "service": "obsidian-vane"}
 app.add_middleware(
     CORSMiddleware,
     allow_credentials=True,
@@ -575,6 +612,7 @@ logging.basicConfig(level=logging.INFO)
 
 @app.on_event("startup")
 async def ensure_indexes():
+    await migrate_legacy_brand()
     await ensure_billing_indexes()
     await ensure_feature_indexes()
     await ensure_wallet_indexes()
