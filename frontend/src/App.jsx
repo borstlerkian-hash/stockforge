@@ -1,8 +1,8 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import PaymentReturn from "@/pages/PaymentReturn";
-import { Show, SignIn, SignUp } from "@clerk/react";
-import ClerkAuthProvider, { useClerkUnavailable } from "@/components/auth/ClerkAuthProvider";
+import { Show, SignIn, SignUp, useAuth } from "@clerk/react";
+import ClerkAuthProvider, { useClerkStatus } from "@/components/auth/ClerkAuthProvider";
 const Terminal = lazy(() => import("@/pages/Terminal"));
 const Landing = lazy(() => import("@/pages/Landing"));
 import { Background } from "@/components/sf/Background";
@@ -26,11 +26,13 @@ const Home = () => (
 
 // Without a backend there is no Clerk config, so Show/SignIn would crash on a
 // missing provider — render the signed-out landing for every route instead.
-function StaticRoutes() {
+function StaticRoutes({ loading = false }) {
   return (
     <Routes>
       <Route path="/" element={<Suspense fallback={<div className="min-h-screen bg-[#080B11]" />}><Landing /></Suspense>} />
-      <Route path="*" element={<Navigate to="/" replace />} />
+      {/* While auth boots, keep deep links (e.g. /sign-in) intact instead of
+          redirecting them to the landing page before Clerk can take over. */}
+      <Route path="*" element={loading ? <div className="min-h-screen bg-[#080B11]" /> : <Navigate to="/" replace />} />
     </Routes>
   );
 }
@@ -45,9 +47,11 @@ function App() {
   );
 }
 
-function AuthedRoutes() {
-  const unavailable = useClerkUnavailable();
-  if (unavailable) return <StaticRoutes />;
+// Clerk mounts its browser client asynchronously; keep the public landing on screen
+// while it loads instead of rendering an empty page.
+function ClerkReady() {
+  const { isLoaded } = useAuth();
+  if (!isLoaded) return <StaticRoutes loading />;
   return (
         <Routes>
           <Route path="/" element={<Home />} />
@@ -58,6 +62,13 @@ function AuthedRoutes() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
   );
+}
+
+function AuthedRoutes() {
+  const status = useClerkStatus();
+  if (status === "off") return <StaticRoutes />;
+  if (status === "loading") return <StaticRoutes loading />;
+  return <ClerkReady />;
 }
 
 export default App;

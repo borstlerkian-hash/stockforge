@@ -17,10 +17,10 @@ const appearance = {
 
 const BACKEND_URL = "";
 
-// Static builds ship without a backend: VITE_STATIC_DEMO=true skips the config
-// poll entirely and flags auth as unavailable so routes render their fallbacks.
-export const ClerkUnavailableContext = createContext(false);
-export const useClerkUnavailable = () => useContext(ClerkUnavailableContext);
+// "loading" → keep the public shell on screen; "off" → static demo (no Clerk);
+// "ready" → Clerk is mounted and its hooks are safe to call.
+export const ClerkStatusContext = createContext("loading");
+export const useClerkStatus = () => useContext(ClerkStatusContext);
 
 export default function ClerkAuthProvider({ children }) {
   const navigate = useNavigate();
@@ -33,35 +33,54 @@ export default function ClerkAuthProvider({ children }) {
       return;
     }
     let cancelled = false;
+    let retry = null;
     const load = async (attempt = 0) => {
+      // Never let a stalled request hold the landing page hostage.
+      const ctrl = new AbortController();
+      const timer = setTimeout(() => ctrl.abort(), 8000);
       try {
-        const cfg = await (await fetch(`${BACKEND_URL}/api/clerk/config`)).json();
-        if (cfg.enabled) return cancelled || setConfig(cfg);
-      } catch {}
+        const res = await fetch(`${BACKEND_URL}/api/clerk/config`, { signal: ctrl.signal });
+        const cfg = await res.json();
+        if (cancelled) return;
+        if (cfg.enabled) { setConfig(cfg); return; }
+        // The backend answered and auth is switched off: no point retrying.
+        setUnavailable(true);
+        return;
+      } catch {
+        /* offline / cold start: retry below */
+      } finally {
+        clearTimeout(timer);
+      }
       if (cancelled) return;
-      if (attempt >= 20) return setUnavailable(true);
-      setTimeout(() => load(attempt + 1), 1500);
+      if (attempt >= 8) { setUnavailable(true); return; }
+      retry = setTimeout(() => load(attempt + 1), 1200);
     };
     load();
-    return () => { cancelled = true; };
+    return () => { cancelled = true; clearTimeout(retry); };
   }, []);
 
-  if (unavailable) return <ClerkUnavailableContext.Provider value>{children}</ClerkUnavailableContext.Provider>;
-  if (!config) return null;
+  // Render the public site immediately while Clerk boots (or is unavailable) instead
+  // of a blank screen. The landing page is identical either way, so there is no flash
+  // of the wrong content — signed-in users swap to the terminal once config arrives.
+  if (unavailable || !config) {
+    return <ClerkStatusContext.Provider value={unavailable ? "off" : "loading"}>{children}</ClerkStatusContext.Provider>;
+  }
   return (
-    <ClerkProvider
-      publishableKey={config.publishable_key}
-      proxyUrl={config.proxy_url || undefined}
-      appearance={appearance}
-      routerPush={(to) => navigate(to)}
-      routerReplace={(to) => navigate(to, { replace: true })}
-      signInUrl="/sign-in"
-      signUpUrl="/sign-up"
-      signInFallbackRedirectUrl="/"
-      signUpFallbackRedirectUrl="/"
-      afterSignOutUrl="/"
-    >
-      {children}
-    </ClerkProvider>
+    <ClerkStatusContext.Provider value="ready">
+      <ClerkProvider
+        publishableKey={config.publishable_key}
+        proxyUrl={config.proxy_url || undefined}
+        appearance={appearance}
+        routerPush={(to) => navigate(to)}
+        routerReplace={(to) => navigate(to, { replace: true })}
+        signInUrl="/sign-in"
+        signUpUrl="/sign-up"
+        signInFallbackRedirectUrl="/"
+        signUpFallbackRedirectUrl="/"
+        afterSignOutUrl="/"
+      >
+        {children}
+      </ClerkProvider>
+    </ClerkStatusContext.Provider>
   );
 }

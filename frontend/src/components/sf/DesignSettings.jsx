@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Palette, Check } from "lucide-react";
 import { useSF } from "@/context/SFContext";
 import { toast } from "sonner";
@@ -12,10 +12,12 @@ const ACCENTS = [
 ];
 
 export const DesignSettings = () => {
-  const { me, api } = useSF();
-  const [open, setOpen] = useState(false);
+  const { me, api, setMe } = useSF();
   const [accent, setAccent] = useState(me?.design?.accent || "red");
   const [saving, setSaving] = useState(false);
+
+  // `me` arrives after the first render, so sync once the saved accent is known.
+  useEffect(() => { if (me?.design?.accent) setAccent(me.design.accent); }, [me?.design?.accent]);
 
   if (!me || (me.tier || 1) < 5) return null;
 
@@ -24,6 +26,7 @@ export const DesignSettings = () => {
     setSaving(true);
     try {
       await api.put("/me/design", { accent: newAccent });
+      setMe((m) => m && { ...m, design: { ...(m.design || {}), accent: newAccent } });
       toast.success("Design updated");
       // Apply accent color
       const a = ACCENTS.find((x) => x.id === newAccent);

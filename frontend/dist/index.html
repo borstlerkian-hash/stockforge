@@ -1,6 +1,5 @@
 <!doctype html>
 <html lang="en" class="dark">
-  <!-- <html lang="en" class="dark"> — uncomment for dark-by-default (replace the tag above; `dark` is a Tailwind variant, never `@apply` it) -->
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
@@ -9,15 +8,75 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
-    <title>StockForge · Neural Terminal</title>
-    <meta name="description" content="StockForge Neural Terminal — every NASDAQ listing and the top 100 cryptos, Monte Carlo prediction cones, support/resistance, paper trading with deposits, AI insights and 10 membership tiers." />
-    <meta name="theme-color" content="#050505" />
+    <title>StockForge — Live Markets, Forecasts &amp; AI Analysis</title>
+    <meta name="description" content="Every NASDAQ listing and the top 100 cryptos in one terminal: live prices, Monte Carlo forecasts with support &amp; resistance, an AI market advisor and paper trading. Free to start." />
+    <meta name="theme-color" content="#080B11" />
+    <meta name="color-scheme" content="dark" />
+    <meta name="robots" content="index, follow" />
+    <link rel="canonical" href="https://stockforge-j390.onrender.com/" />
+
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="StockForge" />
+    <meta property="og:title" content="StockForge — Live Markets, Forecasts &amp; AI Analysis" />
+    <meta property="og:description" content="Every NASDAQ listing and the top 100 cryptos in one terminal: live prices, Monte Carlo forecasts, an AI market advisor and paper trading." />
+    <meta property="og:url" content="https://stockforge-j390.onrender.com/" />
+    <meta property="og:image" content="https://stockforge-j390.onrender.com/icon-512.png" />
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="StockForge — Live Markets, Forecasts &amp; AI Analysis" />
+    <meta name="twitter:description" content="Every NASDAQ listing and the top 100 cryptos in one terminal: live prices, Monte Carlo forecasts, an AI market advisor and paper trading." />
+    <meta name="twitter:image" content="https://stockforge-j390.onrender.com/icon-512.png" />
+
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="StockForge" />
     <link rel="manifest" href="/manifest.json" />
-    <script type="module" crossorigin src="/assets/index-BKHOS9BY.js"></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "StockForge",
+        "url": "https://stockforge-j390.onrender.com/",
+        "applicationCategory": "FinanceApplication",
+        "operatingSystem": "Any",
+        "description": "Live NASDAQ and crypto market terminal with Monte Carlo forecasts, an AI market advisor and paper trading.",
+        "offers": { "@type": "Offer", "price": "0", "priceCurrency": "USD" }
+      }
+    </script>
+    <script type="module" crossorigin src="/assets/index-CQPTmLy3.js"></script>
     <link rel="modulepreload" crossorigin href="/assets/QueryClientProvider-Bq5nUP6T.js">
-    <link rel="stylesheet" crossorigin href="/assets/index-BLtSHdn4.css">
+    <link rel="stylesheet" crossorigin href="/assets/index-BZ_X9Tu9.css">
   </head>
   <body>
+    <!-- Branded first paint: replaced by the app as soon as React mounts. -->
+    <div id="splash" aria-hidden="true">
+      <div class="splash-mark"></div>
+      <p class="splash-name">STOCKFORGE</p>
+      <p class="splash-sub">LOADING MARKET TERMINAL</p>
+      <div class="splash-bar"><i></i></div>
+    </div>
+    <noscript>
+      <div style="padding:48px 24px;text-align:center;font-family:monospace;color:#F1F5F9">
+        StockForge needs JavaScript enabled to load live market data.
+      </div>
+    </noscript>
     <div id="root"></div>
+    <style>
+      #splash {
+        position: fixed; inset: 0; z-index: 9999; display: grid; place-content: center; justify-items: center;
+        gap: 10px; background: #080B11; color: #F1F5F9; transition: opacity .28s ease, visibility .28s ease;
+      }
+      #splash.splash-out { opacity: 0; visibility: hidden; }
+      .splash-mark {
+        width: 34px; height: 34px; margin-bottom: 8px; border: 2px solid #ef4444; transform: rotate(45deg);
+        box-shadow: 0 0 26px rgba(239, 68, 68, .45); animation: splash-spin 3.2s linear infinite;
+      }
+      .splash-name { margin: 0; font: 700 22px/1 ui-monospace, monospace; letter-spacing: .28em; }
+      .splash-sub { margin: 0; font: 10px/1 ui-monospace, monospace; letter-spacing: .32em; color: #64748B; }
+      .splash-bar { width: 148px; height: 2px; margin-top: 10px; background: rgba(255,255,255,.08); overflow: hidden; }
+      .splash-bar i { display: block; height: 100%; width: 40%; background: #ef4444; animation: splash-slide 1.1s ease-in-out infinite; }
+      @keyframes splash-spin { to { transform: rotate(405deg); } }
+      @keyframes splash-slide { 0% { transform: translateX(-110%); } 100% { transform: translateX(360%); } }
+      @media (prefers-reduced-motion: reduce) { .splash-mark, .splash-bar i { animation: none; } }
+    </style>
   </body>
 </html>

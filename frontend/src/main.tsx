@@ -21,3 +21,11 @@ createRoot(document.getElementById('root')!).render(
     </QueryClientProvider>
   </StrictMode>,
 )
+
+// Let the first React frame paint, then fade the static splash out.
+requestAnimationFrame(() => requestAnimationFrame(() => {
+  const splash = document.getElementById('splash')
+  if (!splash) return
+  splash.classList.add('splash-out')
+  setTimeout(() => splash.remove(), 320)
+}))

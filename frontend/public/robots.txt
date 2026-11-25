@@ -1,0 +1,8 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /sign-in
+Disallow: /sign-up
+Disallow: /payment/
+
+Sitemap: https://stockforge-j390.onrender.com/sitemap.xml

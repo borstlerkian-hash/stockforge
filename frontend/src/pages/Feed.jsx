@@ -31,13 +31,23 @@ export const FeedCard = ({ t, i }) => {
 };
 
 export default function Feed() {
-  const { snap, can, setPage } = useSF();
+  const { snap, can, setPage, refreshSnap, refreshMarkets } = useSF();
   const [sort, setSort] = useState(() => localStorage.getItem("sf_sort") || "movers");
+  const [refreshing, setRefreshing] = useState(false);
   const list = useMemo(() => [...snap.tickers].sort(SORTS[sort]), [snap, sort]);
   const full = can("fullFeed");
   const site = useSite();
   const s = site.data?.settings;
   const pick = (s) => { setSort(s); localStorage.setItem("sf_sort", s); };
+  const refresh = async () => {
+    setRefreshing(true);
+    try {
+      await Promise.all([refreshSnap(), refreshMarkets(true)]);
+      toast.success("Feed refreshed with the latest prices");
+    } finally {
+      setRefreshing(false);
+    }
+  };
   return (
     <section data-testid="page-home">
       <Hero kicker="SESSION TAPE" title={s?.home_headline || "Market Feed"} sub={s?.home_sub ?? "Session momentum · tap any name for a deep dive"}>
@@ -47,7 +57,7 @@ export default function Feed() {
               className={`seg-btn ${sort === s ? "seg-btn-on" : ""}`}>{s === "sym" ? "A–Z" : s}</button>
           ))}
         </div>
-        <button className="sf-btn" onClick={() => toast.success("Feed refreshed from the session snapshot")} data-testid="feed-refresh-button">Refresh</button>
+        <button className="sf-btn" onClick={refresh} disabled={refreshing} data-testid="feed-refresh-button">{refreshing ? "Refreshing…" : "Refresh"}</button>
         {sectionOn(s, "scan") && <button className="sf-btn sf-btn-p" onClick={() => setPage("scan")} data-testid="feed-scanner-button">Scanner</button>}
       </Hero>
       {!site.isError && <FeaturedStrip items={site.data?.items} loading={site.isLoading} />}

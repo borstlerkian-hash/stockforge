@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useState } from "react";
+import { lazy, Suspense, useEffect, useMemo, useState } from "react";
 import { Toaster } from "sonner";
 import { ArrowUp } from "lucide-react";
 import { SFProvider, useSF } from "@/context/SFContext";
@@ -72,23 +72,36 @@ const ForgeOverlays = () => {
 const VIEWS = { home: Feed, markets: MarketsView, dash: Dashboard, quotes: Quotes, live: Live, scan: Scanner, watch: Watchlist, ai: Advisor, trade: Paper, tiers: Tiers, admin: Admin };
 
 const Boot = () => {
-  const [show, setShow] = useState(() => { try { return !sessionStorage.getItem("sf_booted"); } catch { return false; } });
+  const [show, setShow] = useState(() => {
+    try {
+      // Motion-sensitive users skip the intro entirely.
+      if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return false;
+      return !sessionStorage.getItem("sf_booted");
+    } catch { return false; }
+  });
   const [leaving, setLeaving] = useState(false);
   const [stage, setStage] = useState(0);
+  const rain = useMemo(
+    () => Array.from({ length: 8 }, () => Array.from({ length: 8 }, () => String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96)))),
+    [],
+  );
+  const finish = () => { try { sessionStorage.setItem("sf_booted", "1"); } catch { /* ignore */ } setShow(false); };
   useEffect(() => {
     if (!show) return;
     const timers = [];
-    timers.push(setTimeout(() => setStage(1), 300));
-    timers.push(setTimeout(() => setStage(2), 900));
-    timers.push(setTimeout(() => setStage(3), 1600));
-    timers.push(setTimeout(() => setLeaving(true), 3800));
-    timers.push(setTimeout(() => { try { sessionStorage.setItem("sf_booted", "1"); } catch { /* ignore */ } setShow(false); }, 4400));
+    timers.push(setTimeout(() => setStage(1), 120));
+    timers.push(setTimeout(() => setStage(2), 420));
+    timers.push(setTimeout(() => setStage(3), 900));
+    timers.push(setTimeout(() => setLeaving(true), 1650));
+    timers.push(setTimeout(finish, 1950));
     return () => timers.forEach(clearTimeout);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [show]);
   if (!show) return null;
   const siteName = (() => { try { return JSON.parse(localStorage.getItem("sf_site_name") || "null"); } catch { return null; } })() || "STOCKFORGE";
+  const skip = () => { setLeaving(true); setTimeout(finish, 220); };
   return (
-    <div className={`fixed inset-0 z-[100] bg-[#080505] grid place-items-center overflow-hidden ${leaving ? "boot-out" : ""}`} data-testid="boot-screen">
+    <div className={`fixed inset-0 z-[100] bg-[#080505] grid place-items-center overflow-hidden cursor-pointer ${leaving ? "boot-out" : ""}`} data-testid="boot-screen" role="status" aria-label="Loading StockForge" onClick={skip}>
       {/* Red ambient glow */}
       <div className="absolute inset-0 pointer-events-none">
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] rounded-full blur-[120px] opacity-30" style={{ background: "radial-gradient(circle, #ef4444 0%, #991b1b 40%, transparent 70%)" }} />
@@ -97,10 +110,10 @@ const Boot = () => {
       </div>
       {/* Subtle red matrix rain */}
       <div className="absolute inset-0 opacity-8 pointer-events-none">
-        {Array.from({ length: 8 }).map((_, i) => (
+        {rain.map((col, i) => (
           <div key={i} className="absolute top-0 font-mono text-[9px] text-red-400/30 leading-none" style={{ left: (i * 12.5) + "%", animation: "matrix-rain " + (3 + (i % 3)) + "s linear infinite", animationDelay: (i * 0.5) + "s", willChange: "transform" }}>
-            {Array.from({ length: 8 }).map((_, j) => (
-              <div key={j} style={{ opacity: 0.3 }}>{String.fromCharCode(0x30A0 + Math.floor(Math.random() * 96))}</div>
+            {col.map((ch, j) => (
+              <div key={j} style={{ opacity: 0.3 }}>{ch}</div>
             ))}
           </div>
         ))}
@@ -139,8 +152,8 @@ const Boot = () => {
           <p className="font-disp text-2xl font-bold tracking-[0.15em] text-white mt-4" style={{ textShadow: "0 0 20px rgba(239,68,68,0.4)" }}>WELCOME</p>
           <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-1">TO THE NEURAL TERMINAL</p>
         </div>
+        <p className="font-mono text-[9px] tracking-[0.3em] text-neutral-600 pt-2">TAP TO SKIP</p>
       </div>
-      {/* Welcome overlay removed — duplicate of inline welcome message above */}
     </div>
   );
 };

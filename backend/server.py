@@ -12,7 +12,9 @@ from pydantic import BaseModel, Field
 from pathlib import Path
 import requests
 from starlette.concurrency import run_in_threadpool
+from starlette.datastructures import MutableHeaders
 from starlette.middleware.cors import CORSMiddleware
+from starlette.middleware.gzip import GZipMiddleware
 
 from admin import build_admin_router, make_require_admin
 from billing import build_billing_router, ensure_billing_indexes, get_tiers
@@ -34,6 +36,52 @@ from emergentintegrations.llm.chat import LlmChat, StreamDone, TextDelta, UserMe
 app = FastAPI()
 api = APIRouter(prefix="/api")
 logger = logging.getLogger("stockforge")
+
+
+class ResponseHeadersMiddleware:
+    """Adds security + caching headers without buffering the response body.
+
+    Written as a bare ASGI middleware (rather than BaseHTTPMiddleware) so the SSE
+    advisor streams keep flowing chunk-by-chunk. Only the response-start message
+    is touched, which is cheap and safe for streaming responses.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            return await self.app(scope, receive, send)
+        path = scope.get("path", "")
+
+        async def send_with_headers(message):
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(scope=message)
+                headers.setdefault("X-Content-Type-Options", "nosniff")
+                headers.setdefault("Referrer-Policy", "strict-origin-when-cross-origin")
+                headers.setdefault("X-Frame-Options", "SAMEORIGIN")
+                headers.setdefault("Permissions-Policy", "camera=(), microphone=(), geolocation=()")
+                if "cache-control" not in headers:
+                    content_type = headers.get("content-type", "")
+                    if message["status"] >= 400:
+                        headers["cache-control"] = "no-store"
+                    elif path.startswith("/api/"):
+                        # Auth-aware JSON must never be reused from a shared cache.
+                        headers["cache-control"] = "no-store"
+                    elif path.startswith("/assets/"):
+                        # Vite fingerprints these filenames, so they can be cached forever.
+                        headers["cache-control"] = "public, max-age=31536000, immutable"
+                    elif path == "/sw.js":
+                        headers["cache-control"] = "no-cache"
+                    elif content_type.startswith("text/html"):
+                        headers["cache-control"] = "no-cache"
+                    else:
+                        headers["cache-control"] = "public, max-age=3600"
+            await send(message)
+
+        await self.app(scope, receive, send_with_headers)
+
+
 MODEL = ("anthropic", "claude-opus-5-5")
 SYMS = {t["sym"] for t in TICKERS}
 
@@ -517,6 +565,10 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+# The app is served straight from uvicorn, which does not compress on its own.
+# Gzip cuts the JS/CSS bundle roughly 4x and skips SSE + already-compressed media.
+app.add_middleware(GZipMiddleware, minimum_size=500, compresslevel=6)
+app.add_middleware(ResponseHeadersMiddleware)
 
 logging.basicConfig(level=logging.INFO)
 
@@ -553,4 +605,8 @@ if DIST.is_dir():
             candidate = (_dist_root / full_path).resolve()
             if candidate.is_relative_to(_dist_root) and candidate.is_file():
                 return FileResponse(candidate)
+            # A missing bundle or asset must 404 instead of being served (and cached)
+            # as the SPA's index.html.
+            if full_path.startswith("assets/") or "." in full_path.rsplit("/", 1)[-1]:
+                raise HTTPException(404, "Not found")
         return FileResponse(_dist_root / "index.html")

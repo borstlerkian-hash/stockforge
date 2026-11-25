@@ -47,6 +47,17 @@
   ::-webkit-scrollbar-thumb { background: var(--a-line); }
 }
 
+/* Keyboard users can jump straight past the nav. */
+.skip-link {
+  position: fixed; left: 1rem; top: -4rem; z-index: 200;
+  padding: 10px 16px; border-radius: 10px;
+  background: var(--a); color: #080B11;
+  font-family: "JetBrains Mono Variable", monospace; font-size: 12px; font-weight: 700;
+  letter-spacing: 0.08em; text-transform: uppercase;
+  transition: top 0.18s ease;
+}
+.skip-link:focus { top: 1rem; }
+
 .font-disp { font-family: "JetBrains Mono Variable", ui-monospace, monospace; font-weight: 700; letter-spacing: -0.03em; }
 .font-mono, .mono { font-family: "JetBrains Mono Variable", ui-monospace, monospace; }
 .kicker { font-family: "JetBrains Mono Variable", monospace; font-size: 10px; letter-spacing: 0.28em; text-transform: uppercase; color: var(--a); }
@@ -97,9 +108,10 @@ html.fx-gold .font-disp.sf-title { background: linear-gradient(90deg, #fde68a, #
 }
 .sf-input:focus { border-color: var(--a); box-shadow: 0 0 0 3px var(--a-soft); }
 
-.tape-track { display: inline-flex; gap: 36px; animation: tape 60s linear infinite; padding-left: 100%; will-change: transform; }
+/* Items are rendered twice; moving exactly one copy (-50%) loops seamlessly. */
+.tape-track { display: inline-flex; gap: 36px; animation: tape 60s linear infinite; will-change: transform; }
 .tape:hover .tape-track { animation-play-state: paused; }
-@keyframes tape { to { transform: translateX(-100%); } }
+@keyframes tape { to { transform: translateX(-50%); } }
 
 .pulse-dot { width: 7px; height: 7px; border-radius: 99px; background: var(--a); box-shadow: 0 0 0 0 var(--a); animation: pdot 1.8s ease-out infinite; }
 @keyframes pdot { 0% { box-shadow: 0 0 0 0 var(--a-glow); } 70% { box-shadow: 0 0 0 10px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
@@ -301,7 +313,6 @@ html { -webkit-tap-highlight-color: transparent; }
 @keyframes float-up { 0%, 100% { transform: translateY(0); opacity: 0.5; } 50% { transform: translateY(-15px); opacity: 0.9; } }
 
 /* ---------- Premium micro-interactions ---------- */
-.sf-panel { will-change: transform; }
 .sf-panel:hover { transform: translate3d(0, -3px, 0) scale(1.003); box-shadow: 0 0 0 1px rgba(255,255,255,0.06) inset, 0 12px 24px -6px rgba(0,0,0,0.7), 0 32px 64px -16px var(--a-glow), 0 0 60px -12px var(--a-glow); }
 
 /* Smooth header on scroll */
@@ -380,7 +391,7 @@ tr:hover { background-color: rgba(255, 255, 255, 0.04); }
   html, body { overflow-x: hidden; }
 }
 /* ---------- Premium smoothness pass v2 ---------- */
-.sf-panel { transition: border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); will-change: transform; }
+.sf-panel { transition: border-color 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), box-shadow 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1); }
 .sf-panel:hover { transform: translate3d(0, -2px, 0); box-shadow: 0 0 0 1px rgba(255,255,255,0.05) inset, 0 8px 20px -4px rgba(0,0,0,0.6), 0 24px 48px -12px var(--a-glow); }
 .sf-btn { transition: all 0.18s cubic-bezier(0.2, 0.8, 0.2, 1); position: relative; overflow: hidden; }
 .sf-btn:hover { transform: translateY(-1px); box-shadow: 0 0 20px -4px var(--a-glow); }

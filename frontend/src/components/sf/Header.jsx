@@ -87,6 +87,7 @@ export const Header = ({ onCmd, onInstall, onBell }) => {
         <nav className="hidden lg:flex items-center gap-0.5 mx-auto" aria-label="Primary">
           {pages.map((p) => (
             <button key={p.id} onClick={() => setPage(p.id)} data-testid={`nav-${p.id}`}
+              aria-current={page === p.id ? "page" : undefined}
               className={`nav-pill ${page === p.id ? "nav-pill-on" : ""}`}>
               {p.id === "live" ? "● " : ""}{p.label}
             </button>
@@ -134,6 +135,7 @@ const PRIMARY = ["home", "markets", "dash", "ai", "watch"];
             const Icon = ICONS[p.id];
             return (
               <button key={p.id} onClick={() => setPage(p.id)} data-testid={`mobile-nav-${p.id}`}
+                aria-current={page === p.id ? "page" : undefined}
                 className={`dock-btn flex-1 min-w-0 flex flex-col items-center gap-0.5 ${page === p.id ? "dock-btn-on" : ""}`}>
                 {Icon && <Icon size={16} />}
                 <span className="text-[8px] leading-none">{p.label}</span>
