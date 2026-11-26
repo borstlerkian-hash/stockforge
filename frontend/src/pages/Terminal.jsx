@@ -247,7 +247,7 @@ const Shell = () => {
       <BtcCheckout />
       <NotificationsSheet open={bell} onOpenChange={setBell} />
       <ForgeOverlays />
-      <CursorField />
+      <CursorField mode={interfaceMode} />
     </div>
   );
 };

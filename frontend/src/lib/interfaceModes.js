@@ -5,31 +5,31 @@ export const INTERFACE_MODES = [
     id: "professional",
     name: "Professional",
     minTier: 1,
-    desc: "Flat surfaces, sharp edges and no ambient motion.",
+    desc: "Flat surfaces, sharp edges and a precise caliper that answers the pointer.",
   },
   {
     id: "smooth",
     name: "Smooth",
     minTier: 1,
-    desc: "Soft edges, gentle fades and a calm background drift.",
+    desc: "Soft edges, gentle fades and a calm halo that widens on approach.",
   },
   {
     id: "water",
     name: "Water",
     minTier: 4,
-    desc: "Liquid gradients, deep glass and slow, weightless movement.",
+    desc: "Liquid gradients, deep glass and ripples that spread from the cursor.",
   },
   {
     id: "scifi",
     name: "Sci-Fi",
     minTier: 7,
-    desc: "HUD grid, scanlines and a cold signal glow.",
+    desc: "HUD grid, scanlines and a reticle that scans when you close in.",
   },
   {
     id: "singularity",
     name: "Singularity",
     minTier: 10,
-    desc: "Dense particles, orbital rings and a full void backdrop.",
+    desc: "Dense particles, orbital rings and a gravity well at the cursor.",
   },
 ];
 

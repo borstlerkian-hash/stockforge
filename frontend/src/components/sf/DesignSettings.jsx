@@ -197,6 +197,12 @@ export const DesignSettings = () => {
             style={previewStyle}
             data-testid="design-preview"
             data-preview-mode={previewMode}
+            onPointerMove={(e) => {
+              if (e.pointerType !== "mouse") return;
+              const r = e.currentTarget.getBoundingClientRect();
+              e.currentTarget.style.setProperty("--mx", `${e.clientX - r.left}px`);
+              e.currentTarget.style.setProperty("--my", `${e.clientY - r.top}px`);
+            }}
             onMouseLeave={() => { setHoverMode(null); setHoverAccent(null); }}
           >
             <span className="preview-brackets"><i /><i /><i /><i /></span>

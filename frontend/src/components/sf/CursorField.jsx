@@ -1,80 +1,108 @@
 import { useEffect, useRef } from "react";
 
-// A single pointer-driven field. It follows the cursor with a soft lag and changes
-// shape/energy with the selected interface mode. It never handles pointer events.
+// The original pointer is the cursor. This layer only adds mode-specific
+// reactions at the exact pointer position; there is no easing or trailing ghost.
 const TARGETS = 'a, button, [role="button"], [role="tab"], input, select, textarea, .sf-panel, tr, [data-hover-signal]';
+const HOVER_GAP = 110;
 
-export const CursorField = () => {
-  const ref = useRef(null);
+export const CursorField = ({ mode = "smooth" }) => {
+  const cursorRef = useRef(null);
+  const pulsesRef = useRef(null);
 
   useEffect(() => {
-    if (!window.matchMedia("(pointer: fine)").matches || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const fine = window.matchMedia("(pointer: fine)");
+    const reduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+    if (!fine.matches || reduce.matches) return;
 
-    const el = ref.current;
-    if (!el) return;
-    let raf = 0;
-    let x = -200;
-    let y = -200;
-    let tx = -200;
-    let ty = -200;
+    const el = cursorRef.current;
+    const layer = pulsesRef.current;
+    if (!el || !layer) return;
+
+    const root = document.documentElement;
+    root.dataset.cursorReactive = "on";
+
     let active = false;
+    let lastPulse = 0;
 
-    const tick = () => {
-      x += (tx - x) * 0.16;
-      y += (ty - y) * 0.16;
-      el.style.transform = `translate3d(${x}px, ${y}px, 0)`;
-      if (Math.abs(tx - x) > 0.2 || Math.abs(ty - y) > 0.2) raf = requestAnimationFrame(tick);
-      else raf = 0;
+    const pulse = (cx, cy, strong = false) => {
+      const now = performance.now();
+      if (!strong && now - lastPulse < HOVER_GAP) return;
+      lastPulse = now;
+      const p = document.createElement("i");
+      p.className = `cf-pulse cf-pulse--${mode}${strong ? " is-strong" : ""}`;
+      p.style.left = `${cx}px`;
+      p.style.top = `${cy}px`;
+      p.addEventListener("animationend", () => p.remove(), { once: true });
+      layer.appendChild(p);
+      // Safety cleanup when animations are throttled or disabled.
+      window.setTimeout(() => p.remove(), 1800);
     };
 
     const onMove = (e) => {
-      tx = e.clientX;
-      ty = e.clientY;
+      // Direct assignment keeps the visual locked to the native pointer.
+      el.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
       el.dataset.visible = "true";
-      if (!raf) raf = requestAnimationFrame(tick);
 
       const hit = e.target instanceof Element ? e.target.closest(TARGETS) : null;
       const next = !!hit;
       if (next !== active) {
         active = next;
         el.dataset.active = String(next);
+        if (next) pulse(e.clientX, e.clientY);
       }
       if (hit) {
         const label = hit.dataset.signal || hit.getAttribute("aria-label") || hit.textContent || "";
         el.dataset.label = label.trim().slice(0, 22);
+      } else {
+        el.dataset.label = "";
       }
     };
 
+    const onDown = (e) => {
+      el.dataset.pressed = "true";
+      pulse(e.clientX, e.clientY, true);
+    };
+    const onUp = () => { el.dataset.pressed = "false"; };
     const hide = () => { el.dataset.visible = "false"; };
-    const press = () => { el.dataset.pressed = "true"; };
-    const release = () => { el.dataset.pressed = "false"; };
     const onOut = (e) => { if (!e.relatedTarget) hide(); };
 
     window.addEventListener("pointermove", onMove, { passive: true });
-    window.addEventListener("pointerdown", press, { passive: true });
-    window.addEventListener("pointerup", release, { passive: true });
+    window.addEventListener("pointerdown", onDown, { passive: true });
+    window.addEventListener("pointerup", onUp, { passive: true });
     window.addEventListener("blur", hide);
     window.addEventListener("mouseout", onOut);
     document.addEventListener("mouseleave", hide);
 
     return () => {
-      if (raf) cancelAnimationFrame(raf);
+      delete root.dataset.cursorReactive;
       window.removeEventListener("pointermove", onMove);
-      window.removeEventListener("pointerdown", press);
-      window.removeEventListener("pointerup", release);
+      window.removeEventListener("pointerdown", onDown);
+      window.removeEventListener("pointerup", onUp);
       window.removeEventListener("blur", hide);
       window.removeEventListener("mouseout", onOut);
       document.removeEventListener("mouseleave", hide);
+      layer.replaceChildren();
     };
-  }, []);
+  }, [mode]);
 
   return (
-    <div ref={ref} className="cursor-field" data-visible="false" data-active="false" data-pressed="false" aria-hidden="true">
-      <i className="cf-core" />
-      <i className="cf-ring" />
-      <i className="cf-ticks" />
-      <i className="cf-label" />
-    </div>
+    <>
+      <div
+        ref={cursorRef}
+        className="cursor-field"
+        data-mode={mode}
+        data-visible="false"
+        data-active="false"
+        data-pressed="false"
+        aria-hidden="true"
+      >
+        <i className="cf-aura" />
+        <i className="cf-shape" />
+        <i className="cf-core" />
+        <i className="cf-label" />
+      </div>
+      <div ref={pulsesRef} className="cursor-pulses" aria-hidden="true" />
+    </>
   );
 };
 
