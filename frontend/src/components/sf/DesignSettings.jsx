@@ -43,7 +43,9 @@ export const DesignSettings = () => {
   const [motion, setMotion] = useState(
     typeof me?.design?.motion === "number" ? me.design.motion : DEFAULT_MOTION
   );
-  const [cursorLag, setCursorLag] = useState(0);
+  const [cursorLag, setCursorLag] = useState(
+    typeof me?.design?.cursorLag === "number" ? me.design.cursorLag : 0
+  );
   const [hoverMode, setHoverMode] = useState(null);
   const [hoverAccent, setHoverAccent] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -80,7 +82,7 @@ export const DesignSettings = () => {
   const save = async (patch, message, quiet = false) => {
     setSaving(true);
     try {
-      const design = await api.put("/me/design", patch);
+      const design = await api.put("/me/design", { ...patch, cursorLag });
       setMe((m) => m && { ...m, design: { ...(m.design || {}), ...(design || patch) } });
       if (!quiet && message) toast.success(message);
       return true;
