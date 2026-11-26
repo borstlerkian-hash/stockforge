@@ -1,33 +1,46 @@
 import { useEffect, useRef, useState } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
-import { publicFetch, fmtUsd, type PayStatus } from "@/lib/forge";
+import { fmtUsd, publicFetch, useForgeApi, type Funding, type PayStatus } from "@/lib/forge";
 
-// Stripe returns here. Poll the status endpoint (which also credits the wallet once on "paid"),
-// then hand the user back to the terminal.
+// Hosted checkouts return here. Poll the status endpoint (which also credits the
+// practice balance once payment is confirmed), then hand the user back.
 export default function PaymentReturn({ ok }: { ok: boolean }) {
   const [params] = useSearchParams();
   const navigate = useNavigate();
+  const api = useForgeApi();
   const sid = params.get("session_id");
+  const fid = params.get("funding_id");
+  const token = params.get("token");
   const [state, setState] = useState<"checking" | "paid" | "failed" | "cancelled">(ok ? "checking" : "cancelled");
   const [amount, setAmount] = useState<number | undefined>();
   const tries = useRef(0);
 
   useEffect(() => {
-    if (!ok || !sid) return;
+    if (!ok) return;
     let stop = false;
+
     const tick = async () => {
       try {
-        const s = await publicFetch<PayStatus>(`/payments/status/${sid}`);
-        setAmount(s.amount);
-        if (s.payment_status === "paid") return !stop && setState("paid");
-        if (s.payment_status === "expired" || s.payment_status === "failed") return !stop && setState("failed");
+        if (fid) {
+          const f = await api.post<Funding>(`/funding/${fid}/confirm`, { token: token || undefined });
+          setAmount(f.amount);
+          if (f.credited || f.status === "approved") return !stop && setState("paid");
+          if (["rejected", "expired", "failed"].includes(f.status)) return !stop && setState("failed");
+        } else if (sid) {
+          // Legacy Stripe sessions still settle through the public status route.
+          const s = await publicFetch<PayStatus>(`/payments/status/${sid}`);
+          setAmount(s.amount);
+          if (s.payment_status === "paid") return !stop && setState("paid");
+          if (s.payment_status === "expired" || s.payment_status === "failed") return !stop && setState("failed");
+        }
       } catch { /* keep polling */ }
-      if (++tries.current < 15 && !stop) setTimeout(tick, 2000);
+      if (++tries.current < 18 && !stop) setTimeout(tick, 2000);
       else if (!stop) setState("failed");
     };
+
     tick();
     return () => { stop = true; };
-  }, [ok, sid]);
+  }, [ok, sid, fid, token, api]);
 
   useEffect(() => {
     if (state === "paid" || state === "cancelled") {
@@ -37,7 +50,7 @@ export default function PaymentReturn({ ok }: { ok: boolean }) {
   }, [state, navigate]);
 
   const msg = {
-    checking: ["CONFIRMING PAYMENT", "Talking to Stripe — this takes a few seconds."],
+    checking: ["CONFIRMING PAYMENT", "Talking to your payment provider — this takes a few seconds."],
     paid: ["DEPOSIT CONFIRMED", `${amount ? fmtUsd(amount, 0) : "Your practice credits"} added to your buying power. Returning to the terminal…`],
     failed: ["PAYMENT NOT CONFIRMED", "We couldn't confirm this payment. No funds were added."],
     cancelled: ["CHECKOUT CANCELLED", "No charge was made. Returning to the terminal…"],

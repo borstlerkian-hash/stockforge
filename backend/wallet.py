@@ -56,6 +56,11 @@ async def _credit(uid: str, amount: float, kind: str, note: str, ref: str = ""):
     return txn
 
 
+async def credit_wallet(uid: str, amount: float, kind: str, note: str, ref: str = ""):
+    """Public ledger credit used by the external funding providers."""
+    return await _credit(uid, amount, kind, note, ref)
+
+
 class AmountIn(BaseModel):
     amount: float = Field(gt=0, le=MAX_INSTANT)
 

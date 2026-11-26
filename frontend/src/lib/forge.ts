@@ -95,7 +95,7 @@ export interface Prediction {
   updated: number;
 }
 
-export interface WalletTxn { id: string; t: string; kind: "instant" | "card" | "withdraw"; amount: number; note: string; balance: number; ref?: string }
+export interface WalletTxn { id: string; t: string; kind: "instant" | "card" | "withdraw" | "paypal" | "square" | "bitcoin" | "bank"; amount: number; note: string; balance: number; ref?: string }
 export interface Wallet {
   cash: number;
   deposits_total: number;
@@ -108,6 +108,49 @@ export interface Wallet {
   card_max: number;
 }
 export interface CardCheckout { checkout_url: string; session_id: string; amount?: number; mode?: "live" | "test" }
+export type FundingProvider = "paypal" | "square" | "bitcoin" | "bank";
+export interface FundingMethod {
+  id: FundingProvider;
+  label: string;
+  enabled: boolean;
+  mode?: string;
+  note?: string;
+}
+export interface FundingMethods { min: number; max: number; methods: FundingMethod[] }
+export interface FundingBank {
+  bank_name?: string;
+  account_name?: string;
+  account_number?: string;
+  routing_number?: string;
+  instructions?: string;
+}
+export interface Funding {
+  id: string;
+  reference: string;
+  provider: FundingProvider;
+  amount: number;
+  usd_cents: number;
+  status: string;
+  credited?: boolean;
+  created_at: string;
+  updated_at?: string;
+  redirect_url?: string;
+  provider_order_id?: string;
+  provider_status?: string;
+  btc_address?: string;
+  amount_btc?: string;
+  amount_sats?: number;
+  btc_usd?: string;
+  price_source?: string;
+  quote_expires_at?: string;
+  txid?: string;
+  received_sats?: number;
+  confirmations?: number;
+  underpaid?: boolean;
+  bank?: FundingBank;
+  note?: string;
+  admin_note?: string;
+}
 export interface PayStatus { session_id: string; status: string; payment_status: string; amount?: number }
 
 export class ForgeError extends Error {

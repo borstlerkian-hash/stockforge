@@ -27,6 +27,7 @@ from markets import get_markets, markets_router
 from universe import LAST_PX, equity_of, find_asset, in_universe, price_of, universe_router, warm
 from predict import TF, Timeframe, narrative_context, predict
 from wallet import build_wallet_router, ensure_wallet_indexes
+from funding import build_funding_router, ensure_funding_indexes
 from routers.site import build_site_router, migrate_legacy_brand
 from routers.prediction_tracker import router as prediction_tracker_router, log_prediction
 from lib.ai_errors import friendly_ai_error, is_budget_error
@@ -544,6 +545,7 @@ app.include_router(clerk_router)
 app.include_router(markets_router)
 app.include_router(universe_router)
 app.include_router(build_wallet_router(current))
+app.include_router(build_funding_router(current, require_admin))
 app.include_router(build_site_router(require_admin))
 app.include_router(build_agent_router(require_admin))
 app.include_router(digest_router)
@@ -627,6 +629,7 @@ async def ensure_indexes():
     await ensure_billing_indexes()
     await ensure_feature_indexes()
     await ensure_wallet_indexes()
+    await ensure_funding_indexes()
     from lib.db import ensure_indexes as ensure_lib_indexes
     await ensure_lib_indexes()
     asyncio.create_task(warm())

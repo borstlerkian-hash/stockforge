@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useState } from "react";
 import { toast } from "sonner";
-import { Bitcoin, Check, Download, ExternalLink, FileArchive, RefreshCw, Save, Trash2, X } from "lucide-react";
+import { Bitcoin, Check, Download, ExternalLink, FileArchive, Landmark, RefreshCw, Save, Trash2, Wallet, X } from "lucide-react";
 import SiteSettingsTab from "@/components/admin/SiteSettingsTab";
 import ItemsTab from "@/components/admin/ItemsTab";
 import AgentTab from "@/components/admin/AgentTab";
@@ -148,6 +148,123 @@ const PaymentsTab = ({ legacy }) => {
   );
 };
 
+const FUND_STATUSES = ["pending", "awaiting_transfer", "pending_review", "seen", "confirmed", "approved", "rejected", "expired", "failed"];
+const fundTone = (s) => s === "approved" ? TONE.approved : ["rejected", "failed"].includes(s) ? TONE.rejected : s === "expired" ? TONE.expired : TONE.seen;
+
+const FundingTab = () => {
+  const { api } = useSF();
+  const [rows, setRows] = useState(null);
+  const [settings, setSettings] = useState(null);
+  const [filter, setFilter] = useState("");
+  const load = useCallback(async () => {
+    try {
+      const [list, cfg] = await Promise.all([
+        api.get(`/admin/funding${filter ? `?status=${filter}` : ""}`),
+        api.get("/admin/funding/settings"),
+      ]);
+      setRows(list); setSettings(cfg);
+    } catch (e) { toast.error(e.message); }
+  }, [api, filter]);
+  useEffect(() => { load(); }, [load]);
+
+  const save = async (e) => {
+    e.preventDefault();
+    try {
+      const { updated_at: _updated_at, ...body } = settings;
+      const cfg = await api.put("/admin/funding/settings", body);
+      setSettings(cfg);
+      toast.success("Funding settings saved");
+    } catch (err) { toast.error(err.message); }
+  };
+
+  const act = async (f, action) => {
+    try {
+      const body = action === "reject" ? { note: window.prompt("Reason for rejecting (shown to the member)", "") || "" } : undefined;
+      const r = await api.post(`/admin/funding/${f.id}/${action}`, body);
+      toast.success(`Request ${r.status}`);
+      load();
+    } catch (e) { toast.error(e.message); }
+  };
+
+  if (!rows || !settings) return <div className="sk h-72" data-testid="admin-funding-loading" />;
+  const canAct = (f) => !f.credited && !["approved", "rejected", "expired", "failed"].includes(f.status);
+  return (
+    <div className="space-y-4">
+      <form className="sf-panel p-5 max-w-3xl" onSubmit={save} data-testid="admin-funding-settings">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <div className="lab !mb-0 flex items-center gap-2"><Landmark size={12} /> BANK TRANSFER SETTINGS</div>
+          <label className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-wider text-neutral-400">
+            <input type="checkbox" className="accent-[var(--a)]" checked={!!settings.enabled}
+                   onChange={(e) => setSettings({ ...settings, enabled: e.target.checked })} data-testid="admin-funding-enabled" />
+            Enable bank transfer
+          </label>
+        </div>
+        <p className="text-xs text-neutral-500 mb-4">PayPal and Square keys are Render environment variables. Bitcoin uses the receiving address in the Bitcoin tab. This form controls the manual bank-transfer method only.</p>
+        <div className="grid sm:grid-cols-2 gap-2">
+          {[
+            ["bank_name", "Bank name"], ["account_name", "Account name"],
+            ["account_number", "Account number"], ["routing_number", "Routing / sort code"],
+          ].map(([key, label]) => (
+            <label key={key} className="block">
+              <span className="font-mono text-[10px] text-neutral-500 tracking-widest">{label}</span>
+              <input className="sf-input w-full !py-1.5 !text-xs" value={settings[key] || ""}
+                     onChange={(e) => setSettings({ ...settings, [key]: e.target.value })}
+                     data-testid={`admin-funding-${key}`} />
+            </label>
+          ))}
+        </div>
+        <label className="block mt-2">
+          <span className="font-mono text-[10px] text-neutral-500 tracking-widest">INSTRUCTIONS SHOWN TO MEMBERS</span>
+          <textarea className="sf-input w-full !py-1.5 !text-xs" rows={2} value={settings.instructions || ""}
+                    onChange={(e) => setSettings({ ...settings, instructions: e.target.value })}
+                    data-testid="admin-funding-instructions" />
+        </label>
+        <button className="sf-btn sf-btn-p sf-btn-sm mt-3" data-testid="admin-funding-save"><Save size={12} /> Save bank details</button>
+      </form>
+
+      <div className="sf-panel overflow-x-auto" data-testid="admin-funding-table">
+        <div className="flex flex-wrap items-center justify-between gap-2 p-4">
+          <div className="lab !mb-0 flex items-center gap-2"><Wallet size={12} /> WALLET FUNDING · {rows.length}</div>
+          <div className="flex gap-2">
+            <select className="sf-input !py-1 !text-xs" value={filter} onChange={(e) => setFilter(e.target.value)} data-testid="admin-funding-filter">
+              <option value="">All statuses</option>{FUND_STATUSES.map((s) => <option key={s} value={s}>{s}</option>)}
+            </select>
+            <button className="sf-btn sf-btn-sm" onClick={load} data-testid="admin-funding-refresh"><RefreshCw size={12} /></button>
+          </div>
+        </div>
+        <table className="w-full text-sm">
+          <thead><tr className="border-y border-slate-800"><th className={TH}>DATE</th><th className={TH}>USER</th><th className={TH}>METHOD</th><th className={TH}>AMOUNT</th><th className={TH}>STATUS</th><th className={TH}>DETAIL</th><th className={TH}>ACTIONS</th></tr></thead>
+          <tbody>
+            {rows.map((f) => (
+              <tr key={f.id} className="border-b border-slate-800/60 hover:bg-white/[0.03] transition-colors duration-150" data-testid={`admin-funding-row-${f.id}`}>
+                <td className={`${TD} font-mono text-xs text-neutral-400 whitespace-nowrap`}>{when(f.created_at)}</td>
+                <td className={`${TD} text-xs`}>{f.email || f.user_id}</td>
+                <td className={`${TD} font-mono text-xs uppercase`}>{f.provider}</td>
+                <td className={`${TD} font-mono text-xs whitespace-nowrap`}>{money(f.amount)}<span className="text-neutral-600"> · {f.reference}</span></td>
+                <td className={TD}><span className={`font-mono text-[10px] uppercase px-1.5 py-0.5 rounded border ${fundTone(f.status)}`} data-testid={`admin-funding-status-${f.id}`}>{f.status}</span></td>
+                <td className={`${TD} font-mono text-[10px] text-neutral-500`}>
+                  {f.txid && <a className="accent inline-flex items-center gap-1 hover:underline" href={`https://mempool.space/tx/${f.txid}`} target="_blank" rel="noreferrer">{f.txid.slice(0, 10)}…<ExternalLink size={10} /></a>}
+                  {f.note && <p className="truncate max-w-[180px]">{f.note}</p>}
+                  {f.admin_note && <p className="text-neutral-400 truncate max-w-[180px]">{f.admin_note}</p>}
+                </td>
+                <td className={TD}>
+                  {canAct(f) ? (
+                    <div className="flex gap-1">
+                      <button className="sf-btn sf-btn-sm" onClick={() => act(f, "approve")} aria-label="Approve" data-testid={`admin-funding-approve-${f.id}`}><Check size={12} /></button>
+                      <button className="sf-btn sf-btn-sm" onClick={() => act(f, "reject")} aria-label="Reject" data-testid={`admin-funding-reject-${f.id}`}><X size={12} /></button>
+                    </div>
+                  ) : <span className="font-mono text-[10px] text-neutral-600">{f.credited ? "CREDITED" : "—"}</span>}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        {!rows.length && <p className="p-6 text-sm text-neutral-500" data-testid="admin-funding-empty">No wallet funding requests{filter ? ` with status ${filter}` : ""} yet.</p>}
+      </div>
+    </div>
+  );
+};
+
 const TiersTab = () => {
   const { api, refreshSnap } = useSF();
   const [rows, setRows] = useState(null);
@@ -235,13 +352,13 @@ export default function Admin() {
   const s = d?.stats;
   return (
     <section data-testid="page-admin">
-      <Hero kicker="CONTROL CENTRE" title="Admin" sub="Site settings · featured items · users · AI agent · payments · tiers">
+      <Hero kicker="CONTROL CENTRE" title="Admin" sub="Site settings · featured items · users · AI agent · payments · wallet funding · tiers">
         <button className="sf-btn" onClick={load} data-testid="admin-refresh-button"><RefreshCw size={14} /> Refresh</button>
         <button className="sf-btn" onClick={download} disabled={busy} data-testid="admin-page-download-button"><FileArchive size={14} />{busy ? "Packing…" : "Source .zip"}</button>
       </Hero>
       <Tabs defaultValue="overview">
         <TabsList className="mb-6 flex-nowrap sm:flex-wrap justify-start overflow-x-auto max-w-full h-auto p-1 gap-1 bg-[#0D131F]/90 border border-white/[0.06] rounded-xl" data-testid="admin-tabs">
-          {[["overview", "Overview"], ["site", "Site settings"], ["items", "Featured items"], ["users", "Users & roles"], ["agent", "AI agent"], ["history", "History"], ["payments", `Payments${s?.btc_pending ? ` · ${s.btc_pending}` : ""}`], ["tiers", "Tier editor"], ["bitcoin", "Bitcoin wallet"]].map(([v, l]) => (
+          {[["overview", "Overview"], ["site", "Site settings"], ["items", "Featured items"], ["users", "Users & roles"], ["agent", "AI agent"], ["history", "History"], ["payments", `Payments${s?.btc_pending ? ` · ${s.btc_pending}` : ""}`], ["funding", "Wallet funding"], ["tiers", "Tier editor"], ["bitcoin", "Bitcoin wallet"]].map(([v, l]) => (
             <TabsTrigger key={v} value={v} className="font-mono text-[11px] uppercase tracking-wider rounded-lg shrink-0" data-testid={`admin-tab-${v}`}>{l}</TabsTrigger>
           ))}
         </TabsList>
@@ -283,6 +400,7 @@ export default function Admin() {
         <TabsContent value="history"><HistoryTab /></TabsContent>
         <TabsContent value="users">{d ? <UsersTab users={d.users} tiers={snap.tiers} onTier={onTier} onAdmin={onAdmin} onDelete={onDelete} meId={me.user_id} /> : <div className="sk h-64" />}</TabsContent>
         <TabsContent value="payments"><PaymentsTab legacy={d?.payments || []} /></TabsContent>
+        <TabsContent value="funding"><FundingTab /></TabsContent>
         <TabsContent value="tiers"><TiersTab /></TabsContent>
         <TabsContent value="bitcoin"><BitcoinTab /></TabsContent>
       </Tabs>

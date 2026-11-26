@@ -74,12 +74,16 @@ FastAPI, async throughout. `python` is the app venv interpreter
   above its local imports, and `lib/db.py` self-loads it so standalone scripts
   inherit it too. The pod runs `mongod` locally, so `MONGO_URL` points at
   `localhost`. Add new secrets/config here; read them with `os.environ`.
-- **Card deposits**: set `STRIPE_SECRET_KEY` (`sk_test_…` or `sk_live_…`) to
-  enable the card/wallet tab in Vane Wallet. The card checkout uses Stripe
-  Checkout with a server-defined amount, so no Stripe product catalog is
-  required. Set `STRIPE_WEBHOOK_SECRET` and point a Stripe webhook at
-  `/api/stripe/webhook` for reliable crediting if a buyer closes the browser
-  before returning; the success page also reconciles the session.
+- **Wallet funding**: the Add funds tab supports PayPal, Square, Bitcoin, and
+  manual bank transfer. Set `PAYPAL_CLIENT_ID`/`PAYPAL_CLIENT_SECRET` and
+  `PAYPAL_ENV` (`sandbox` or `live`) for PayPal. Set `SQUARE_ACCESS_TOKEN`,
+  `SQUARE_LOCATION_ID`, and `SQUARE_ENV` (`sandbox` or `production`) for Square.
+  The optional `PAYPAL_WEBHOOK_ID` and `SQUARE_WEBHOOK_SIGNATURE_KEY` point to
+  `/api/funding/paypal/webhook` and `/api/funding/square/webhook` for reliable
+  crediting if a buyer closes the browser before returning. Bitcoin reuses the
+  receiving address from Admin → Bitcoin wallet. Bank transfer details are set
+  in Admin → Wallet funding; an admin approves those requests manually. All
+  funding records live in `wallet_fundings` and credit the practice balance once.
 - **Dates**: `backend/lib/dates.py` — `today_iso(tz=None)`. The pod clock is
   UTC; anchor "today" server-side with this, never with client-side date math.
 - **Interactive check**: `cd /app/backend && python -c 'import server'` catches
