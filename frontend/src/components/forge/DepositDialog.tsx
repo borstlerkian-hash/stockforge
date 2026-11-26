@@ -1,16 +1,19 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import {
   ArrowDownToLine, ArrowRight, ArrowUpFromLine, BadgeCheck, CircleCheck, CreditCard, FileCheck2,
-  Info, LockKeyhole, ShieldCheck, TrendingUp, Wallet as WalletIcon, X, Zap,
+  Info, LockKeyhole, ShieldCheck, TrendingUp, X, Zap,
 } from "lucide-react";
 import { fmtUsd, useForgeApi, type CardCheckout, type Wallet, type WalletTxn } from "@/lib/forge";
 import { useSF } from "@/context/SFContext";
 
 const QUICK = [1000, 5000, 10000, 50000];
+const CARD_QUICK = [100, 500, 1000, 5000];
 const MAX = 1_000_000;
+const CARD_MIN_FALLBACK = 5;
+const CARD_MAX_FALLBACK = 25_000;
 
 export interface DepositDialogProps {
   open: boolean;
@@ -30,13 +33,20 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
   };
   const [tab, setTab] = useState<Tab>("instant");
   const [amount, setAmount] = useState("10000");
-  const [pkg, setPkg] = useState("deposit_500");
   const [busy, setBusy] = useState(false);
   const [receipt, setReceipt] = useState<WalletTxn | null>(null);
 
   const w = useQuery({ queryKey: ["wallet"], queryFn: () => api.get<Wallet>("/wallet"), enabled: open });
   const wallet = w.data && !w.isError ? w.data : undefined;
   const cardReady = wallet?.card_enabled === true;
+  const cardMode = wallet?.card_mode ?? "off";
+  const cardMin = wallet?.card_min ?? CARD_MIN_FALLBACK;
+  const cardMax = wallet?.card_max ?? CARD_MAX_FALLBACK;
+
+  // When a card processor is connected, make the real funding path the first thing members see.
+  useEffect(() => {
+    if (cardReady) setTab("card");
+  }, [cardReady]);
 
   const done = async (msg: string) => {
     toast.success(msg);
@@ -46,7 +56,11 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
 
   const submit = async () => {
     const n = Number(amount);
-    if (tab !== "card") {
+    if (tab === "card") {
+      if (!cardReady) return toast.error("Card payments aren't enabled yet");
+      if (!Number.isFinite(n) || n < cardMin) return toast.error(`Minimum card deposit is ${fmtUsd(cardMin, 0)}`);
+      if (n > cardMax) return toast.error(`Maximum card deposit is ${fmtUsd(cardMax, 0)}`);
+    } else {
       if (!Number.isFinite(n) || n <= 0) return toast.error("Enter an amount above $0");
       if (n > MAX) return toast.error(`Maximum per transfer is ${fmtUsd(MAX, 0)}`);
       if (tab === "withdraw" && wallet && n > wallet.cash + 1e-6) return toast.error("Withdrawal exceeds available cash");
@@ -62,7 +76,7 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
         setReceipt(r.txn);
         await done(`${fmtUsd(n, 0)} withdrawal processed`);
       } else {
-        const r = await api.post<CardCheckout>("/wallet/card/checkout", { package_id: pkg, origin_url: window.location.origin });
+        const r = await api.post<CardCheckout>("/wallet/card/checkout", { amount: n, origin_url: window.location.origin });
         window.location.href = r.checkout_url;
         return;
       }
@@ -83,7 +97,7 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
     <button
       onClick={() => switchTab(id)}
       disabled={disabled}
-      title={disabled ? "Card checkout is not configured for this deployment" : undefined}
+      title={disabled ? "Card payments are not enabled yet" : undefined}
       data-testid={`deposit-tab-${id}`}
       role="tab"
       aria-selected={tab === id}
@@ -131,8 +145,8 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
             </div>
 
             <div className="flex gap-1 mb-4" role="tablist">
-              <TabBtn id="instant" icon={<Zap size={12} />} label="Add funds" />
-              <TabBtn id="card" icon={<CreditCard size={12} />} label="Card" disabled={wallet ? !cardReady : false} />
+              <TabBtn id="instant" icon={<Zap size={12} />} label="Practice" />
+              <TabBtn id="card" icon={<CreditCard size={12} />} label="Card / Wallet" disabled={wallet ? !cardReady : false} />
               <TabBtn id="withdraw" icon={<ArrowUpFromLine size={12} />} label="Transfer out" />
             </div>
 
@@ -161,7 +175,7 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
                 <p className="text-sm text-neutral-400 flex gap-2">
                   <Info size={14} className="shrink-0 mt-0.5 text-neutral-500" />
                   {tab === "instant"
-                    ? "Instant credit adds simulated buying power to your trading account. No bank account is debited."
+                    ? "Practice credit adds simulated buying power to your trading account. No payment is taken."
                     : "Move simulated cash out of your buying power. This is a ledger entry, not a bank transfer."}
                 </p>
                 <div className="grid grid-cols-4 gap-2">
@@ -194,26 +208,58 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
               <div className="space-y-3">
                 {!cardReady ? (
                   <div className="rounded-xl border border-amber-500/25 bg-amber-500/[0.06] p-3 text-sm text-amber-200/80">
-                    Card checkout isn't configured for this deployment yet. Use <b>Add funds</b> to credit your simulation instantly.
+                    Card payments are not enabled yet. Use <b>Practice</b> for simulated buying power, or ask the admin to connect Stripe.
                   </div>
                 ) : (
                   <>
-                    <p className="text-sm text-neutral-400">
-                      Pay by card through Stripe's secure checkout. This deployment uses test mode — use card
-                      <b className="font-mono text-white"> 4242 4242 4242 4242</b>, any future date and CVC.
-                    </p>
-                    <div className="grid grid-cols-2 gap-2">
-                      {(wallet?.packages ?? [{ id: "deposit_100", amount: 100 }, { id: "deposit_500", amount: 500 }, { id: "deposit_1000", amount: 1000 }, { id: "deposit_5000", amount: 5000 }]).map((p) => (
+                    <div className="rounded-xl border border-white/10 bg-white/[0.02] p-3">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-mono text-[10px] tracking-widest text-neutral-500">PAYMENT METHOD</span>
+                        <span className="sf-pill flex items-center gap-1">
+                          <LockKeyhole size={10} /> {cardMode === "test" ? "TEST MODE" : "STRIPE SECURE"}
+                        </span>
+                      </div>
+                      <p className="text-sm text-neutral-300 mt-2">
+                        Card or supported wallet. You'll finish on Stripe's hosted checkout.
+                      </p>
+                      <div className="flex flex-wrap gap-1.5 mt-2 font-mono text-[9px] text-neutral-500">
+                        {["VISA", "MASTERCARD", "AMEX", "APPLE PAY", "GOOGLE PAY"].map((method) => (
+                          <span key={method} className="border border-white/10 px-1.5 py-1">{method}</span>
+                        ))}
+                      </div>
+                    </div>
+                    {cardMode === "test" && (
+                      <div className="rounded-xl border border-sky-500/20 bg-sky-500/[0.05] p-3 text-xs text-sky-200/80">
+                        Test mode is active. Use card <b className="font-mono text-white">4242 4242 4242 4242</b>,
+                        any future date and CVC. No real money moves.
+                      </div>
+                    )}
+                    <div className="grid grid-cols-4 gap-2">
+                      {CARD_QUICK.map((q) => (
                         <button
-                          key={p.id} onClick={() => setPkg(p.id)} data-testid={`card-package-${p.id}`}
-                          className={`font-mono py-3 border transition-colors duration-150 ${
-                            pkg === p.id ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"
+                          key={q} onClick={() => setAmount(String(q))} data-testid={`card-quick-${q}`}
+                          className={`font-mono text-xs py-2 border transition-colors duration-150 ${
+                            Number(amount) === q ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"
                           }`}
                         >
-                          {fmtUsd(p.amount, 0)}
+                          {fmtUsd(q, 0)}
                         </button>
                       ))}
                     </div>
+                    <label className="block">
+                      <span className="font-mono text-[10px] text-neutral-500 tracking-widest">AMOUNT TO ADD (USD)</span>
+                      <input
+                        className="sf-input w-full mt-1 !text-lg" type="number" min={cardMin} max={cardMax} step="any"
+                        value={amount} onChange={(e) => setAmount(e.target.value)} data-testid="card-amount-input"
+                      />
+                    </label>
+                    <div className="flex items-center justify-between font-mono text-[11px] text-neutral-500 border-t border-white/5 pt-3">
+                      <span>Credited after payment</span>
+                      <span className="text-white">{fmtUsd(Number(amount) || 0, 0)}</span>
+                    </div>
+                    <p className="text-[11px] leading-relaxed text-neutral-500">
+                      Practice credits only. No cash value, no securities are purchased, and this is not investment advice.
+                    </p>
                   </>
                 )}
               </div>

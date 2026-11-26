@@ -74,6 +74,12 @@ FastAPI, async throughout. `python` is the app venv interpreter
   above its local imports, and `lib/db.py` self-loads it so standalone scripts
   inherit it too. The pod runs `mongod` locally, so `MONGO_URL` points at
   `localhost`. Add new secrets/config here; read them with `os.environ`.
+- **Card deposits**: set `STRIPE_SECRET_KEY` (`sk_test_…` or `sk_live_…`) to
+  enable the card/wallet tab in Vane Wallet. The card checkout uses Stripe
+  Checkout with a server-defined amount, so no Stripe product catalog is
+  required. Set `STRIPE_WEBHOOK_SECRET` and point a Stripe webhook at
+  `/api/stripe/webhook` for reliable crediting if a buyer closes the browser
+  before returning; the success page also reconciles the session.
 - **Dates**: `backend/lib/dates.py` — `today_iso(tz=None)`. The pod clock is
   UTC; anchor "today" server-side with this, never with client-side date math.
 - **Interactive check**: `cd /app/backend && python -c 'import server'` catches

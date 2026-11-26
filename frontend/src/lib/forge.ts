@@ -103,8 +103,11 @@ export interface Wallet {
   txns: WalletTxn[];
   packages: { id: string; amount: number }[];
   card_enabled: boolean;
+  card_mode: "live" | "test" | "off";
+  card_min: number;
+  card_max: number;
 }
-export interface CardCheckout { checkout_url: string; session_id: string }
+export interface CardCheckout { checkout_url: string; session_id: string; amount?: number; mode?: "live" | "test" }
 export interface PayStatus { session_id: string; status: string; payment_status: string; amount?: number }
 
 export class ForgeError extends Error {

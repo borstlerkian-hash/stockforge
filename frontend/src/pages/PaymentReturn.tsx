@@ -38,7 +38,7 @@ export default function PaymentReturn({ ok }: { ok: boolean }) {
 
   const msg = {
     checking: ["CONFIRMING PAYMENT", "Talking to Stripe — this takes a few seconds."],
-    paid: ["DEPOSIT CONFIRMED", `${amount ? fmtUsd(amount, 0) : "Your funds"} added to your buying power. Returning to the terminal…`],
+    paid: ["DEPOSIT CONFIRMED", `${amount ? fmtUsd(amount, 0) : "Your practice credits"} added to your buying power. Returning to the terminal…`],
     failed: ["PAYMENT NOT CONFIRMED", "We couldn't confirm this payment. No funds were added."],
     cancelled: ["CHECKOUT CANCELLED", "No charge was made. Returning to the terminal…"],
   }[state];

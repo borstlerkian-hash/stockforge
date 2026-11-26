@@ -1,9 +1,9 @@
-"""Wallet: instant paper deposits/withdrawals plus Stripe (test-mode sandbox) card deposits that
-fund the investing balance. Every credit is recorded once in wallet_txns."""
+"""Wallet: instant paper deposits/withdrawals plus Stripe card/wallet deposits that fund the
+practice balance. Every credit is recorded once in wallet_txns."""
 import os
 import uuid
 from datetime import datetime, timezone
-from typing import Literal
+from typing import Literal, Optional
 
 import stripe
 from pymongo import ReturnDocument
@@ -15,15 +15,19 @@ from db import db
 from features import notify
 from universe import equity_of
 
-stripe.api_key = os.environ.get("STRIPE_SECRET_KEY") or "sk_test_emergent"
-STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "")
-CARD_ENABLED = bool(os.environ.get("STRIPE_SECRET_KEY"))  # no live/test key configured → hide card option
+STRIPE_SECRET_KEY = os.environ.get("STRIPE_SECRET_KEY", "").strip()
+stripe.api_key = STRIPE_SECRET_KEY or None
+STRIPE_WEBHOOK_SECRET = os.environ.get("STRIPE_WEBHOOK_SECRET", "").strip()
+CARD_ENABLED = STRIPE_SECRET_KEY.startswith(("sk_test_", "sk_live_", "rk_test_", "rk_live_"))
+CARD_MODE = "live" if STRIPE_SECRET_KEY.startswith(("sk_live_", "rk_live_")) else "test" if CARD_ENABLED else "off"
 TAX_MODE = "full"  # sandbox country is SMP-supported and deposit credits are a digital good
 
-# server-side packages: lookup_key -> USD credited (Stripe price amount matches)
+# server-side packages: lookup_key -> USD credited. Card checkout also accepts a custom amount.
 PACKAGES = {
     "deposit_100": 100.0, "deposit_500": 500.0, "deposit_1000": 1000.0, "deposit_5000": 5000.0,
 }
+CARD_MIN = 5.0
+CARD_MAX = 25_000.0
 MAX_INSTANT = 1_000_000.0
 
 
@@ -57,7 +61,8 @@ class AmountIn(BaseModel):
 
 
 class CardIn(BaseModel):
-    package_id: Literal["deposit_100", "deposit_500", "deposit_1000", "deposit_5000"]
+    amount: Optional[float] = Field(default=None, ge=CARD_MIN, le=CARD_MAX)
+    package_id: Optional[Literal["deposit_100", "deposit_500", "deposit_1000", "deposit_5000"]] = None
     origin_url: str = Field(min_length=8, max_length=300)
 
 
@@ -66,12 +71,12 @@ async def _settle(session_id: str):
     rec = await db.payment_transactions.find_one_and_update(
         {"session_id": session_id, "payment_status": "paid", "credited": {"$ne": True}}, {"$set": {"credited": True}}, projection={"_id": 0})
     if rec:
-        amt = PACKAGES[rec["lookup_key"]]
-        await _credit(rec["user_id"], amt, "card", f"Card deposit · Stripe test", session_id)
+        amt = float(rec.get("amount") or PACKAGES.get(rec.get("lookup_key"), 0))
+        await _credit(rec["user_id"], amt, "card", "Card deposit · Stripe", session_id)
         await notify(rec["user_id"], "payment", f"Deposit received · ${amt:,.0f}", "Card payment confirmed — buying power updated")
 
 
-def _create_session(price, kwargs):
+def _create_session(kwargs):
     if TAX_MODE == "full":
         try:
             return stripe.checkout.Session.create(**kwargs, managed_payments={"enabled": True})
@@ -93,7 +98,8 @@ def build_wallet_router(current):
     async def wallet(me: dict = Depends(current)):
         txns = await db.wallet_txns.find({"user_id": me["user_id"]}, {"_id": 0}).sort("t", -1).to_list(50)
         return {"cash": me["cash"], "deposits_total": me.get("deposits_total", 0), "withdrawals_total": me.get("withdrawals_total", 0),
-                "txns": txns, "packages": [{"id": k, "amount": v} for k, v in PACKAGES.items()], "card_enabled": CARD_ENABLED}
+                "txns": txns, "packages": [{"id": k, "amount": v} for k, v in PACKAGES.items()], "card_enabled": CARD_ENABLED,
+                "card_mode": CARD_MODE, "card_min": CARD_MIN, "card_max": CARD_MAX}
 
     @r.post("/wallet/deposit")
     async def deposit(body: AmountIn, me: dict = Depends(current)):
@@ -110,23 +116,51 @@ def build_wallet_router(current):
 
     @r.post("/wallet/card/checkout")
     async def card_checkout(body: CardIn, me: dict = Depends(current)):
-        prices = (await run_in_threadpool(stripe.Price.list, lookup_keys=[body.package_id], active=True, limit=1)).data
-        if not prices:
-            raise HTTPException(503, "Card deposits aren't configured yet")
-        price = prices[0]
+        if not CARD_ENABLED:
+            raise HTTPException(503, "Card payments aren't configured yet")
+        if body.amount is not None:
+            amt = round(float(body.amount), 2)
+        elif body.package_id:
+            amt = PACKAGES[body.package_id]
+        else:
+            raise HTTPException(400, "Choose an amount to add")
+        if not CARD_MIN <= amt <= CARD_MAX:
+            raise HTTPException(400, f"Card deposits must be between ${CARD_MIN:,.0f} and ${CARD_MAX:,.0f}")
+        cents = int(round(amt * 100))
         origin = body.origin_url.rstrip("/")
-        kwargs = dict(line_items=[{"price": price.id, "quantity": 1}], mode="payment",
-                      success_url=f"{origin}/payment/success?session_id={{CHECKOUT_SESSION_ID}}", cancel_url=f"{origin}/payment/cancel",
-                      metadata={"user_id": me["user_id"], "lookup_key": body.package_id})
+        meta = {"user_id": me["user_id"], "amount": f"{amt:.2f}", "source": "wallet_card"}
+        kwargs = dict(
+            line_items=[{
+                "price_data": {
+                    "currency": "usd",
+                    "product_data": {
+                        "name": "Obsidian Vane practice credits",
+                        "description": "Practice buying power for the Obsidian Vane simulator. No cash value.",
+                    },
+                    "unit_amount": cents,
+                    "tax_behavior": "exclusive",
+                },
+                "quantity": 1,
+            }],
+            mode="payment",
+            payment_method_types=["card"],
+            success_url=f"{origin}/payment/success?session_id={{CHECKOUT_SESSION_ID}}",
+            cancel_url=f"{origin}/payment/cancel",
+            client_reference_id=me["user_id"],
+            metadata=meta,
+            payment_intent_data={"metadata": meta},
+        )
+        if me.get("email"):
+            kwargs["customer_email"] = me["email"]
         try:
-            session = await run_in_threadpool(_create_session, price, kwargs)
+            session = await run_in_threadpool(_create_session, kwargs)
         except stripe.error.StripeError as e:
             raise HTTPException(502, f"Stripe error: {(e.user_message or str(e))[:160]}")
         ts = datetime.now(timezone.utc)
-        await db.payment_transactions.insert_one({"session_id": session.id, "user_id": me["user_id"], "lookup_key": body.package_id,
-                                                  "amount": float(PACKAGES[body.package_id]), "currency": "usd", "status": "initiated",
+        await db.payment_transactions.insert_one({"session_id": session.id, "user_id": me["user_id"], "lookup_key": body.package_id or "custom",
+                                                  "amount": amt, "currency": "usd", "status": "initiated",
                                                   "payment_status": "pending", "credited": False, "created_at": ts, "updated_at": ts})
-        return {"checkout_url": session.url, "session_id": session.id}
+        return {"checkout_url": session.url, "session_id": session.id, "amount": amt, "mode": CARD_MODE}
 
     @r.get("/payments/status/{session_id}")
     async def pay_status(session_id: str):
@@ -152,6 +186,8 @@ def build_wallet_router(current):
 
     @r.post("/stripe/webhook")
     async def stripe_webhook(request: Request):
+        if not STRIPE_WEBHOOK_SECRET:
+            raise HTTPException(503, "Stripe webhook isn't configured")
         payload = await request.body()
         try:
             event = stripe.Webhook.construct_event(payload, request.headers.get("stripe-signature", ""), STRIPE_WEBHOOK_SECRET)
