@@ -5,7 +5,7 @@ import { useEffect, useRef } from "react";
 const TARGETS = 'a, button, [role="button"], [role="tab"], input, select, textarea, .sf-panel, tr, [data-hover-signal]';
 const HOVER_GAP = 110;
 
-export const CursorField = ({ mode = "smooth" }) => {
+export const CursorField = ({ mode = "smooth", lag = 0 }) => {
   const cursorRef = useRef(null);
   const pulsesRef = useRef(null);
 
@@ -24,6 +24,11 @@ export const CursorField = ({ mode = "smooth" }) => {
     let active = false;
     let lastPulse = 0;
 
+    // If a lag is set, a soft transition will smooth the pointer movement.
+    if (lag > 0) {
+      el.style.transition = `transform ${lag}s cubic-bezier(0.4, 0, 0.2, 1)`;
+    }
+
     const pulse = (cx, cy, strong = false) => {
       const now = performance.now();
       if (!strong && now - lastPulse < HOVER_GAP) return;
@@ -39,8 +44,14 @@ export const CursorField = ({ mode = "smooth" }) => {
     };
 
     const onMove = (e) => {
-      // Direct assignment keeps the visual locked to the native pointer.
-      el.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+      // When a lag is active the transform animates from the previous position;
+      // otherwise it snaps instantly.
+      if (lag > 0) {
+        el.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+      } else {
+        el.style.transform = `translate3d(${e.clientX}px, ${e.clientY}px, 0)`;
+        // The transition set above will handle the easing when lag > 0.
+      }
       el.dataset.visible = "true";
 
       const hit = e.target instanceof Element ? e.target.closest(TARGETS) : null;
@@ -83,7 +94,7 @@ export const CursorField = ({ mode = "smooth" }) => {
       document.removeEventListener("mouseleave", hide);
       layer.replaceChildren();
     };
-  }, [mode]);
+  }, [mode, lag]);
 
   return (
     <>

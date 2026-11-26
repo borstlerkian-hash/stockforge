@@ -43,6 +43,7 @@ export const DesignSettings = () => {
   const [motion, setMotion] = useState(
     typeof me?.design?.motion === "number" ? me.design.motion : DEFAULT_MOTION
   );
+  const [cursorLag, setCursorLag] = useState(0);
   const [hoverMode, setHoverMode] = useState(null);
   const [hoverAccent, setHoverAccent] = useState(null);
   const [saving, setSaving] = useState(false);
@@ -315,6 +316,28 @@ export const DesignSettings = () => {
           </div>
         </section>
       </div>
+
+      <section className="studio-controls__col" aria-label="Cursor lag">
+        <div className="studio-section-head">
+          <h3>Cursor lag</h3>
+          <span>0 = instant, 0.3 = smooth</span>
+        </div>
+        <div className="studio-slider">
+          <input
+            type="range"
+            min="0"
+            max="0.3"
+            step="0.01"
+            value={cursorLag}
+            onChange={(e) => setCursorLag(Number(e.currentTarget.value))}
+            className="studio-range"
+            style={{ "--fill": `${cursorLag}` }}
+            data-testid="design-cursor-lag"
+            aria-label="Cursor lag"
+          />
+          <div className="studio-slider__marks"><span>None</span><span>Small</span><span>Full</span></div>
+        </div>
+      </section>
 
       <p className="studio-footnote">Appearance is visual only. Features still follow your tier.</p>
     </div>
