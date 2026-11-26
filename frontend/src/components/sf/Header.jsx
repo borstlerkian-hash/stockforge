@@ -138,7 +138,7 @@ const PRIMARY = ["home", "markets", "dash", "ai", "watch"];
                 aria-current={page === p.id ? "page" : undefined}
                 className={`dock-btn flex-1 min-w-0 flex flex-col items-center gap-0.5 ${page === p.id ? "dock-btn-on" : ""}`}>
                 {Icon && <Icon size={16} />}
-                <span className="text-[8px] leading-none">{p.label}</span>
+                <span className="text-[10px] leading-none">{p.label}</span>
               </button>
             );
           })}
@@ -146,7 +146,7 @@ const PRIMARY = ["home", "markets", "dash", "ai", "watch"];
             <button onClick={() => setMore(true)} data-testid="mobile-nav-more"
               className={`dock-btn flex-1 min-w-0 flex flex-col items-center gap-0.5 ${rest.some((p) => p.id === page) ? "dock-btn-on" : ""}`}>
               <MoreHorizontal size={16} />
-              <span className="text-[8px] leading-none">More</span>
+              <span className="text-[10px] leading-none">More</span>
             </button>
           )}
         </div>
@@ -165,7 +165,7 @@ const PRIMARY = ["home", "markets", "dash", "ai", "watch"];
                   <button key={p.id} onClick={() => { setPage(p.id); setMore(false); }} data-testid={`mobile-more-${p.id}`}
                     className={`dock-btn !py-3 !min-h-[52px] flex flex-col items-center gap-1 ${page === p.id ? "dock-btn-on" : ""}`}>
                     {Icon && <Icon size={18} />}
-                    <span className="text-[8px] leading-none">{p.label}</span>
+                    <span className="text-[10px] leading-none">{p.label}</span>
                   </button>
                 );
               })}

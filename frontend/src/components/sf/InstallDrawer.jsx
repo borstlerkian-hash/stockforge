@@ -4,15 +4,15 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetDescription } from "
 import { useInstall, platform } from "@/hooks/useInstall";
 
 const STEPS = {
-  ios: { icon: Apple, title: "iPhone / iPad", steps: ["Open Obsidian Vane in Safari", "Tap the Share button", "Choose “Add to Home Screen”", "Tap Add — it opens full-screen like a native app"] },
-  android: { icon: Smartphone, title: "Android", steps: ["Open Obsidian Vane in Chrome", "Tap the ⋮ menu", "Choose “Install app”", "Launch it from your home screen"] },
-  desktop: { icon: Monitor, title: "Windows / Mac / Linux", steps: ["Open Obsidian Vane in Chrome or Edge", "Click the install icon in the address bar", "Confirm Install", "Pin it to your dock or taskbar"] },
+  ios: { icon: Apple, title: "iPhone / iPad", steps: ["Open this site in Safari", "Tap Share, then Add to Home Screen", "Tap Add. It opens full-screen like a native app"] },
+  android: { icon: Smartphone, title: "Android", steps: ["Open this site in Chrome", "Tap the menu, then Install app", "Launch it from your home screen"] },
+  desktop: { icon: Monitor, title: "Windows / Mac / Linux", steps: ["Open this site in Chrome or Edge", "Click the install icon in the address bar", "Confirm Install, then pin it to your taskbar"] },
 };
 
 export const InstallDrawer = ({ open, onOpenChange, extra }) => {
   const { canPrompt, prompt, installed, inFrame } = useInstall();
   const me = platform();
-  const order = [me, ...Object.keys(STEPS).filter((k) => k !== me)];
+  const others = Object.keys(STEPS).filter((k) => k !== me);
 
   const install = async () => {
     if (await prompt()) {
@@ -25,7 +25,6 @@ export const InstallDrawer = ({ open, onOpenChange, extra }) => {
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent side="right" className="bg-[#070707] border-l border-[var(--a-line)] w-full sm:max-w-md overflow-y-auto" data-testid="install-drawer">
         <SheetHeader>
-          <p className="kicker">GET THE APP</p>
           <SheetTitle className="font-disp text-3xl text-left">Download Obsidian Vane</SheetTitle>
           <SheetDescription className="text-left">Install the terminal on your phone or computer. It opens in its own window, works offline with your last saved prices and updates itself.</SheetDescription>
         </SheetHeader>
@@ -39,20 +38,42 @@ export const InstallDrawer = ({ open, onOpenChange, extra }) => {
               <ExternalLink size={18} /> Open in a new tab to install
             </button>
           ) : (
-            <p className="text-sm text-neutral-400" data-testid="install-manual-hint">Your browser doesn't offer one-tap install here — follow the steps for your device below.</p>
+            <p className="text-sm text-neutral-400" data-testid="install-manual-hint">Your browser doesn't offer one-tap install here. Follow the steps for your device below.</p>
           )}
           {extra}
-          {order.map((k) => {
+          {[me, ...others].map((k, idx) => {
             const S = STEPS[k];
+            const steps = (
+              <ol className="space-y-2 text-sm text-neutral-300">
+                {S.steps.map((s, i) => <li key={s} className="flex gap-3"><span className="font-mono accent">0{i + 1}</span><span>{s}</span></li>)}
+              </ol>
+            );
+            if (idx > 0) return null;
             return (
-              <div key={k} className={`sf-panel p-4 ${k === me ? "" : "opacity-70"}`} data-testid={`install-steps-${k}`}>
-                <div className="flex items-center gap-2 mb-3"><S.icon size={16} className="accent" /><span className="font-disp text-lg">{S.title}</span>{k === me && <span className="kicker ml-auto">THIS DEVICE</span>}</div>
-                <ol className="space-y-1.5 text-sm text-neutral-300">
-                  {S.steps.map((s, i) => <li key={s} className="flex gap-3"><span className="font-mono accent">0{i + 1}</span>{s}</li>)}
-                </ol>
+              <div key={k} className="sf-panel p-4" data-testid={`install-steps-${k}`}>
+                <div className="flex items-center gap-2 mb-3"><S.icon size={16} className="accent" /><span className="font-disp text-lg">{S.title}</span><span className="ml-auto font-mono text-[10px] uppercase tracking-[0.18em] text-neutral-500">This device</span></div>
+                {steps}
               </div>
             );
           })}
+          {others.length > 0 && (
+            <details className="sf-panel p-4" data-testid="install-other-devices">
+              <summary className="font-disp text-lg cursor-pointer list-none">Other devices</summary>
+              <div className="mt-4 space-y-4">
+                {others.map((k) => {
+                  const S = STEPS[k];
+                  return (
+                    <div key={k} data-testid={`install-steps-${k}`}>
+                      <div className="flex items-center gap-2 mb-2"><S.icon size={15} className="accent" /><span className="font-disp text-base">{S.title}</span></div>
+                      <ol className="space-y-1.5 text-sm text-neutral-400">
+                        {S.steps.map((s, i) => <li key={s} className="flex gap-3"><span className="font-mono accent">0{i + 1}</span><span>{s}</span></li>)}
+                      </ol>
+                    </div>
+                  );
+                })}
+              </div>
+            </details>
+          )}
         </div>
       </SheetContent>
     </Sheet>

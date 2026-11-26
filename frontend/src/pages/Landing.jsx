@@ -14,7 +14,7 @@ const FEATURES = [
   { icon: Activity, t: "Full universe", d: "All ~4,000 NASDAQ listings and the top 100 cryptos, live, searchable and sortable." },
   { icon: LineChart, t: "Forecasts", d: "Monte Carlo cones with best, average and worst case, support & resistance rails and probabilities." },
   { icon: Bot, t: "AI advisor", d: "An intelligent market assistant that reads signals and explains what they mean in plain language." },
-  { icon: Layers, t: "10 tiers", d: "Every tier reshapes the terminal and unlocks deeper interface modes — from professional to void singularity." },
+  { icon: Layers, t: "10 tiers", d: "Every tier reshapes the terminal and unlocks deeper interface modes, from professional through singularity." },
 ];
 
 // Public tape: the same live snapshot the terminal uses, so the landing page
@@ -50,6 +50,7 @@ export default function Landing() {
   useEffect(() => applyTheme(5, s, { mode: "smooth" }), [s]);
   const headline = s?.landing_headline;
   const year = new Date().getFullYear();
+  const PrimaryIcon = FEATURES[0].icon;
   return (
     <div className="min-h-screen relative overflow-hidden">
       <Background tier={5} mode="smooth" />
@@ -67,36 +68,48 @@ export default function Landing() {
         <main id="main">
           <section className="grid lg:grid-cols-12 gap-10 pt-10 sm:pt-16 lg:pt-24 pb-16">
             <motion.div className="lg:col-span-7" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
-              <p className="kicker mb-5 flex items-center gap-2"><span className="pulse-dot" /> {s?.tagline || "MARKET INTELLIGENCE"} · v3</p>
-              <h1 className="font-disp text-[2.6rem] sm:text-6xl lg:text-7xl font-bold leading-[0.98] tracking-tight text-balance" data-testid="landing-headline">
-                {headline && headline !== "The market, distilled into one clear signal." ? headline : <>The market,<br /><span className="accent">distilled</span> into one<br />clear signal.</>}
+              <h1 className="font-disp text-[2.6rem] sm:text-6xl lg:text-7xl font-bold leading-[1.04] tracking-tight text-balance" data-testid="landing-headline">
+                {headline && headline !== "The market, distilled into one clear signal." ? headline : <>The market,<br />distilled into one<br />clear signal.</>}
               </h1>
               <p className="text-neutral-400 text-base md:text-lg max-w-xl mt-6 leading-relaxed" data-testid="landing-sub">
-                {s?.landing_sub || "Obsidian Vane puts every NASDAQ company and the top 100 cryptos in one terminal — Monte Carlo forecasts with support & resistance, an AI advisor, deposits to invest, and ten membership tiers that transform the whole interface."}
+                {s?.landing_sub || "Obsidian Vane puts every NASDAQ company and the top 100 cryptos in one terminal. Monte Carlo forecasts with support and resistance, an AI advisor, accounts to practice investing, and ten membership tiers that reshape the whole interface."}
               </p>
               <div className="flex flex-wrap gap-3 mt-10">
                 <Link to="/sign-in" className="sf-btn sf-btn-p !px-6 !py-4 !text-sm" data-testid="landing-cta-button">Enter the terminal</Link>
                 <button className="sf-btn !px-6 !py-4 !text-sm" onClick={() => setInstall(true)} data-testid="landing-download-button"><Download size={16} /> Download the app</button>
               </div>
-              <p className="font-mono text-[10px] tracking-widest text-neutral-500 mt-6 flex items-center gap-2"><ShieldCheck size={12} /> EMAIL OR GOOGLE SIGN-IN · ROOKIE TIER IS FREE · NOT INVESTMENT ADVICE</p>
+              <p className="font-mono text-[11px] tracking-[0.14em] text-neutral-400 mt-6 flex items-center gap-2"><ShieldCheck size={12} /> EMAIL OR GOOGLE SIGN-IN · ROOKIE TIER IS FREE · NOT INVESTMENT ADVICE</p>
             </motion.div>
-            <div className="lg:col-span-5 grid sm:grid-cols-2 gap-4 content-end">
-              {FEATURES.map((f, i) => (
-                <motion.div key={f.t} className="sf-panel sf-hover p-5" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 + i * 0.1 }}>
-                  <f.icon className="accent mb-4" size={20} />
-                  <p className="font-disp text-lg">{f.t}</p>
-                  <p className="text-sm text-neutral-400 mt-1">{f.d}</p>
-                </motion.div>
-              ))}
+            <div className="lg:col-span-5 content-end">
+              <motion.div className="sf-panel overflow-hidden" initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }} data-testid="landing-features">
+                <div className="grid sm:grid-cols-2">
+                  <div className="sm:col-span-2 p-5 sm:p-6 border-b border-white/[0.06] flex gap-4">
+                    <PrimaryIcon className="accent shrink-0 mt-0.5" size={20} />
+                    <div>
+                      <p className="font-disp text-lg">{FEATURES[0].t}</p>
+                      <p className="text-sm text-neutral-400 mt-1.5 leading-relaxed max-w-md">{FEATURES[0].d}</p>
+                    </div>
+                  </div>
+                  {FEATURES.slice(1).map((f, i) => (
+                    <div key={f.t} className={`p-5 ${i === 1 ? "border-t sm:border-t-0 sm:border-l border-white/[0.06]" : ""}`}>
+                      <div className="flex items-center gap-2">
+                        <f.icon className="accent" size={16} />
+                        <p className="font-disp text-[11px] uppercase tracking-[0.16em] text-neutral-300">{f.t}</p>
+                      </div>
+                      <p className="text-sm text-neutral-400 mt-2.5 leading-relaxed">{f.d}</p>
+                    </div>
+                  ))}
+                </div>
+              </motion.div>
             </div>
           </section>
         </main>
-        <footer className="border-t border-white/[0.06] py-8 flex flex-col sm:flex-row gap-3 sm:gap-6 justify-between font-mono text-[10px] tracking-widest text-neutral-500">
+        <footer className="border-t border-white/[0.06] py-6 flex flex-col sm:flex-row gap-2 sm:gap-6 justify-between sm:items-center font-mono text-[11px] tracking-[0.12em] text-neutral-400">
           <span>© {year} {s?.site_name || "OBSIDIAN VANE"}</span>
-          <span>MARKET DATA MAY BE DELAYED · NOT INVESTMENT ADVICE</span>
-          <div className="flex gap-5">
-            <button className="hover:text-neutral-200 transition-colors" onClick={() => setInstall(true)}>INSTALL</button>
-            <Link to="/sign-in" className="hover:text-neutral-200 transition-colors">SIGN IN</Link>
+          <span>{s?.tagline || "MARKET INTELLIGENCE"} · MARKET DATA MAY BE DELAYED · NOT INVESTMENT ADVICE</span>
+          <div className="flex gap-2 sm:gap-5">
+            <button className="min-h-[44px] px-2 hover:text-neutral-200 transition-colors" onClick={() => setInstall(true)}>INSTALL</button>
+            <Link to="/sign-in" className="min-h-[44px] inline-flex items-center px-2 hover:text-neutral-200 transition-colors">SIGN IN</Link>
           </div>
         </footer>
       </div>

@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -57,7 +57,7 @@ function CopyRow({ label, value, testid }: { label: string; value: string; testi
       toast.success(`${label} copied`);
       setTimeout(() => setDone(false), 1500);
     } catch {
-      toast.error("Copy failed — select the text and copy it manually");
+      toast.error("Copy failed. Select the text and copy it manually.");
     }
   };
   return (
@@ -65,7 +65,7 @@ function CopyRow({ label, value, testid }: { label: string; value: string; testi
       <div className="lab !mb-0">{label}</div>
       <div className="flex items-stretch gap-2">
         <code className="flex-1 min-w-0 break-all sf-input !py-2 !text-[13px] select-all" data-testid={testid}>{value}</code>
-        <button className="sf-btn sf-btn-sm" onClick={copy} aria-label={`Copy ${label}`} data-testid={`${testid}-copy`}>
+        <button className="sf-btn sf-btn-sm !min-h-[44px] !min-w-[44px] !px-0" onClick={copy} aria-label={`Copy ${label}`} data-testid={`${testid}-copy`}>
           {done ? <Check size={14} /> : <Copy size={14} />}
         </button>
       </div>
@@ -96,6 +96,7 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
   const [txid, setTxid] = useState("");
   const [bankNote, setBankNote] = useState("");
   const [err, setErr] = useState("");
+  const dialogRef = useRef<HTMLDivElement>(null);
 
   const walletQ = useQuery({ queryKey: ["wallet"], queryFn: () => api.get<Wallet>("/wallet"), enabled: open });
   const methodsQ = useQuery({ queryKey: ["funding-methods"], queryFn: () => api.get<FundingMethods>("/funding/methods"), enabled: open });
@@ -112,6 +113,14 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
   useEffect(() => {
     if (firstEnabled && !enabledKey.split(",").includes(provider)) setProvider(firstEnabled);
   }, [enabledKey, firstEnabled, provider]);
+
+  useEffect(() => {
+    if (!open) return;
+    dialogRef.current?.focus();
+    const onKey = (e: KeyboardEvent) => { if (e.key === "Escape") onClose(); };
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
+  }, [open, onClose]);
 
   const done = async (msg: string) => {
     toast.success(msg);
@@ -186,8 +195,8 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
       const r = await api.post<Funding>(`/funding/${funding.id}/bitcoin/verify`, { txid: txid.trim() });
       setFunding(r);
       if (isCredited(r)) await done(`${fmtUsd(r.amount, 0)} credited to buying power`);
-      else if (r.status === "seen") toast("Seen on-chain — tap Check again after one confirmation");
-      else if (r.underpaid) toast.warning("Payment seen but below the quoted amount — the admin will review it");
+      else if (r.status === "seen") toast("Seen on-chain. Tap Check again after one confirmation.");
+      else if (r.underpaid) toast.warning("Payment seen but below the quoted amount. The admin will review it.");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Could not verify that transaction";
       setErr(msg);
@@ -204,7 +213,7 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
     try {
       const r = await api.post<Funding>(`/funding/${funding.id}/bank/sent`, { note: bankNote });
       setFunding(r);
-      toast.success("Transfer marked as sent — the admin will review it");
+      toast.success("Transfer marked as sent. The admin will review it.");
     } catch (e) {
       const msg = e instanceof Error ? e.message : "Could not update the request";
       setErr(msg);
@@ -225,7 +234,7 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
       data-testid={`deposit-tab-${id}`}
       role="tab"
       aria-selected={tab === id}
-      className={`flex-1 font-mono text-[11px] tracking-widest uppercase py-2.5 border flex items-center justify-center gap-2 transition-colors duration-150 ${
+      className={`flex-1 min-h-[44px] font-mono text-[11px] tracking-[0.12em] uppercase py-2.5 border flex items-center justify-center gap-2 transition-colors duration-150 ${
         tab === id ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"
       }`}
     >
@@ -243,7 +252,8 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
           data-testid="deposit-overlay"
         >
           <motion.div
-            role="dialog" aria-modal="true" aria-label="Deposit funds"
+            ref={dialogRef} tabIndex={-1}
+            role="dialog" aria-modal="true" aria-labelledby="deposit-title"
             className="relative w-full max-w-lg sf-panel !bg-[#0B0F19] p-5 max-h-[92vh] overflow-y-auto"
             initial={{ scale: 0.96, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.97, opacity: 0 }}
             transition={{ type: "spring", damping: 24, stiffness: 300 }}
@@ -251,15 +261,14 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
           >
             <div className="flex items-start justify-between mb-4 gap-3">
               <div>
-                <p className="kicker flex items-center gap-2"><ShieldCheck size={13} /> VANE WALLET</p>
-                <h3 className="font-disp text-2xl font-bold mt-1">Fund your account</h3>
+                <h3 id="deposit-title" className="font-disp text-2xl font-bold flex items-center gap-2"><ShieldCheck size={16} className="accent" /> Fund your account</h3>
                 <p className="font-mono text-xs text-neutral-500 mt-1">
                   Buying power <b className="text-white" data-testid="deposit-cash">{wallet ? fmtUsd(wallet.cash) : "—"}</b>
                   <span className="mx-2 text-neutral-700">·</span>
                   deposited {wallet ? fmtUsd(wallet.deposits_total, 0) : "—"}
                 </p>
               </div>
-              <button className="sf-btn sf-btn-sm" onClick={onClose} aria-label="Close" data-testid="deposit-close-button"><X size={14} /></button>
+              <button className="sf-btn sf-btn-sm !min-h-[44px] !min-w-[44px] !px-0" onClick={onClose} aria-label="Close" data-testid="deposit-close-button"><X size={14} /></button>
             </div>
 
             <div className="flex flex-wrap items-center gap-2 mb-4">
@@ -306,7 +315,7 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
                   {PRACTICE_QUICK.map((q) => (
                     <button
                       key={q} onClick={() => setAmount(String(q))} data-testid={`deposit-quick-${q}`}
-                      className={`font-mono text-xs py-2 border transition-colors duration-150 ${
+                      className={`font-mono text-xs min-h-[44px] py-2 border transition-colors duration-150 ${
                         Number(amount) === q ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"
                       }`}
                     >
@@ -370,8 +379,8 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
                             {funding.status === "seen" && (
                               <p className="text-xs text-neutral-400" data-testid="fund-btc-seen">
                                 {funding.underpaid
-                                  ? "Received less than quoted — the admin will review it."
-                                  : "Seen on-chain. Your credits post after one confirmation — tap Check again."}
+                                  ? "Received less than quoted. The admin will review it."
+                                  : "Seen on-chain. Your credits post after one confirmation. Tap Check again."}
                                 {funding.txid && <a className="underline ml-1 inline-flex items-center gap-1" href={`https://mempool.space/tx/${funding.txid}`} target="_blank" rel="noreferrer">View <ExternalLink size={10} /></a>}
                               </p>
                             )}
@@ -458,7 +467,7 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
                       {FUND_QUICK.map((q) => (
                         <button
                           key={q} onClick={() => setAmount(String(q))} data-testid={`fund-quick-${q}`}
-                          className={`font-mono text-xs py-2 border transition-colors duration-150 ${
+                          className={`font-mono text-xs min-h-[44px] py-2 border transition-colors duration-150 ${
                             Number(amount) === q ? "border-[var(--a)] text-white bg-[var(--a-soft)]" : "border-white/10 text-neutral-400 hover:text-white"
                           }`}
                         >
@@ -525,8 +534,8 @@ export default function DepositDialog({ open, onClose, onFunds }: DepositDialogP
               </div>
             </div>
 
-            <p className="font-mono text-[9px] leading-relaxed text-neutral-600 mt-4 border-t border-white/5 pt-3">
-              {me?.email ? `Account ${me.email} · ` : ""}Every credit is recorded once in your ledger. Simulated funds are for practice only — not investment advice.
+            <p className="font-mono text-[10px] leading-relaxed text-neutral-400 mt-4 border-t border-white/5 pt-3">
+              {me?.email ? `Account ${me.email} · ` : ""}Every credit is recorded once in your ledger. Simulated funds are for practice only. Not investment advice.
             </p>
           </motion.div>
         </motion.div>
