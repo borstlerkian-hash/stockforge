@@ -33,6 +33,7 @@ from routers.prediction_tracker import router as prediction_tracker_router, log_
 from lib.ai_errors import friendly_ai_error, is_budget_error
 from routers.agent import build_agent_router
 from routers.digest import router as digest_router
+from routers.user_agents import add_user_agents_router
 from emergentintegrations.llm.chat import LlmChat, StreamDone, TextDelta, UserMessage
 
 app = FastAPI()
@@ -537,6 +538,9 @@ async def insights(body: InsightIn, doc: dict = Depends(current)):
 
 
 app.include_router(api)
+
+add_user_agents_router(app)  # public user‑agent endpoints, no admin required
+
 require_admin = make_require_admin(current)
 app.include_router(build_admin_router(current, require_admin))
 app.include_router(build_billing_router(current, require_admin))
