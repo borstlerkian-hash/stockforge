@@ -3,11 +3,10 @@ Only read‑only / limited‑action endpoints are exposed; nothing that
 changes tier, admin status, or moves money without explicit
 permission.  The router is open to any authenticated Clerk user."""
 from fastapi import APIRouter, Depends, HTTPException
-from pydantic import BaseModel, Field, root_validator
+from pydantic import BaseModel, Field
 from typing import Optional, Literal
 
-from db import db
-from api import api_get, api_post  # helper wrappers already in the project
+from data import snapshot
 
 
 router = APIRouter(prefix="/api/user/agents", tags=["user agents"])
@@ -37,9 +36,7 @@ class AgentResponse(BaseModel):
 
 async def _snapshot() -> dict:
     """Return the same data the /api/snapshot endpoint returns."""
-    # Re‑use the existing query client; here we just call the internal function.
-    from queries import get_snapshot  # assume queries module exists
-    return await get_snapshot()
+    return snapshot()
 
 
 # ---------------------------------------------------------------------------
