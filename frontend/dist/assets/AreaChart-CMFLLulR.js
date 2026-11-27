@@ -1,1 +1,0 @@
-import{L as e,M as t}from"./QueryClientProvider-Bq5nUP6T.js";import{F as n,n as r}from"./recharts-2-W7w8kX.js";var i=e(t()),a=[`axis`],o=(0,i.forwardRef)((e,t)=>i.createElement(r,{chartName:`AreaChart`,defaultTooltipEventType:`axis`,validateTooltipEventTypes:a,tooltipPayloadSearcher:n,categoricalChartProps:e,ref:t}));export{o as t};

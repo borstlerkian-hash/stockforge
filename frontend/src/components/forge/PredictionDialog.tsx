@@ -349,7 +349,7 @@ export default function PredictionDialog({ sym, onClose, onTrade, onToggleWatch,
               {/* AI narrative + actions */}
               <Hud className="lg:col-span-12" testid="prediction-ai-panel">
                 <div className="flex flex-wrap items-center gap-2 mb-3">
-                  <p className="hud-lab !mb-0"><Bot size={11} /> CLAUDE FORECAST BRIEFING</p>
+                  <p className="hud-lab !mb-0"><Bot size={11} /> AI Forecast Briefing</p>
                   <div className="ml-auto flex flex-wrap gap-2">
                     <button className="sf-btn sf-btn-sm" onClick={() => onToggleWatch(sym)} data-testid="prediction-watch-button">{watching ? "Unwatch" : "+ Watchlist"}</button>
                     <button className="sf-btn sf-btn-sm" onClick={() => onTrade(sym)} data-testid="prediction-trade-button">{canTrade ? "Invest / trade" : "Unlock trading"}</button>

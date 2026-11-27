@@ -94,6 +94,7 @@ export const PAGES = [
   { id: "ai", label: "Advisor" },
   { id: "trade", label: "Paper" },
   { id: "tiers", label: "Tiers" },
+  { id: "about", label: "About" },
 ];
 
 export const fmt = (n, d = 2) =>

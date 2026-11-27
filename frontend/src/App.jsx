@@ -6,6 +6,7 @@ import ClerkAuthProvider, { useClerkStatus } from "@/components/auth/ClerkAuthPr
 const Terminal = lazy(() => import("@/pages/Terminal"));
 const Landing = lazy(() => import("@/pages/Landing"));
 import { Background } from "@/components/sf/Background";
+import About from "@/pages/About";
 import ErrorBoundary from "@/components/sf/ErrorBoundary";
 
 const AuthPage = ({ children }) => (
@@ -57,6 +58,7 @@ function ClerkReady() {
           <Route path="/" element={<Home />} />
           <Route path="/sign-in/*" element={<AuthPage><SignIn routing="path" path="/sign-in" signUpUrl="/sign-up" withSignUp /></AuthPage>} />
           <Route path="/sign-up/*" element={<AuthPage><SignUp routing="path" path="/sign-up" signInUrl="/sign-in" /></AuthPage>} />
+          <Route path="/about" element={<About />} />
           <Route path="/payment/success" element={<PaymentReturn ok />} />
           <Route path="/payment/cancel" element={<PaymentReturn ok={false} />} />
           <Route path="*" element={<Navigate to="/" replace />} />

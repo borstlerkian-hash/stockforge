@@ -22,7 +22,7 @@ export const AIInsights = () => {
   return (
     <div className="sf-panel p-5 space-y-4" data-testid="ai-insights-panel">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <div className="lab !mb-0">AI INSIGHTS · CLAUDE</div>
+        <div className="lab !mb-0">AI INSIGHTS</div>
         <div className="flex items-center gap-2 min-w-[180px]" data-testid="ai-usage-meter">
           <div className="h-1.5 flex-1 rounded-full bg-white/10 overflow-hidden">
             <div className="h-full bg-[var(--a)] transition-[width] duration-500" style={{ width: limit ? `${Math.min(100, (used / limit) * 100)}%` : "8%" }} />

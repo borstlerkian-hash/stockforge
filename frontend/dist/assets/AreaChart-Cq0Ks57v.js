@@ -1,0 +1,1 @@
+import{A as e,T as t}from"./useQuery-BIhG_qOj.js";import{F as n,n as r}from"./recharts-BSiiPZ6O.js";var i=e(t()),a=[`axis`],o=(0,i.forwardRef)((e,t)=>i.createElement(r,{chartName:`AreaChart`,defaultTooltipEventType:`axis`,validateTooltipEventTypes:a,tooltipPayloadSearcher:n,categoricalChartProps:e,ref:t}));export{o as t};

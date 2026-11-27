@@ -31,6 +31,12 @@ export const INTERFACE_MODES = [
     minTier: 10,
     desc: "Dense particles, orbital rings and a gravity well at the cursor.",
   },
+  {
+    id: "buffett",
+    name: "Buffett",
+    minTier: 1,
+    desc: "Classic, low‑key surfaces with warm gold accents.",
+  },
 ];
 
 // The surface each mode is drawn from. Used by the preview and the cursor signal field.

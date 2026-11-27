@@ -12,6 +12,7 @@ const MODE_ICONS = {
   water: Droplets,
   scifi: Orbit,
   singularity: Sparkles,
+  buffett: Palette,
 };
 
 const MODE_SIGNAL = {
@@ -45,6 +46,9 @@ export const DesignSettings = () => {
   );
   const [cursorLag, setCursorLag] = useState(
     typeof me?.design?.cursorLag === "number" ? me.design.cursorLag : 0
+  );
+  const [aiModel, setAiModel] = useState(
+    typeof me?.design?.aiModel === "string" ? me.design.aiModel : ""
   );
   const [hoverMode, setHoverMode] = useState(null);
   const [hoverAccent, setHoverAccent] = useState(null);
@@ -82,7 +86,7 @@ export const DesignSettings = () => {
   const save = async (patch, message, quiet = false) => {
     setSaving(true);
     try {
-      const design = await api.put("/me/design", { ...patch, cursorLag });
+      const design = await api.put("/me/design", { ...patch, cursorLag, aiModel });
       setMe((m) => m && { ...m, design: { ...(m.design || {}), ...(design || patch) } });
       if (!quiet && message) toast.success(message);
       return true;
@@ -294,6 +298,23 @@ export const DesignSettings = () => {
               <Lock size={14} /><span>Accent colours unlock at T5</span><ArrowUpRight size={13} />
             </button>
           )}
+        </section>
+
+        <section className="studio-controls__col" aria-label="AI model">
+          <div className="studio-section-head">
+            <h3>AI model</h3>
+            <select
+              value={aiModel}
+              onChange={(e) => setAiModel(e.target.value)}
+              style={{ width: "100%" }}
+            >
+              <option value="">Default (no model)</option>
+              <option value="fast">Fast model</option>
+              <option value="smart">Smart model</option>
+              <option value="pro">Pro model</option>
+            </select>
+            <p className="text-xs text-neutral-500 mt-2">Model choice affects the AI advisor’s suggestions but does not send data outside the app.</p>
+          </div>
         </section>
 
         <section className="studio-controls__col" aria-label="Signal response">

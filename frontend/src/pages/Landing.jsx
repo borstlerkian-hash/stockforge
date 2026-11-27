@@ -69,11 +69,23 @@ export default function Landing() {
           <section className="grid lg:grid-cols-12 gap-10 pt-10 sm:pt-16 lg:pt-24 pb-16">
             <motion.div className="lg:col-span-7" initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.6 }}>
               <h1 className="font-disp text-[2.6rem] sm:text-6xl lg:text-7xl font-bold leading-[1.04] tracking-tight text-balance" data-testid="landing-headline">
-                {headline && headline !== "The market, distilled into one clear signal." ? headline : <>The market,<br />distilled into one<br />clear signal.</>}
+                {headline || "The market, distilled into one clear signal."}
               </h1>
               <p className="text-neutral-400 text-base md:text-lg max-w-xl mt-6 leading-relaxed" data-testid="landing-sub">
-                {s?.landing_sub || "Obsidian Vane puts every NASDAQ company and the top 100 cryptos in one terminal. Monte Carlo forecasts with support and resistance, an AI advisor, accounts to practice investing, and ten membership tiers that reshape the whole interface."}
+                {s?.landing_sub || "Obsidian Vane gives you a clear, bias-free signal from every NASDAQ listing and the top 100 cryptos. Live prices, Monte Carlo cones with best, average and worst case, support and resistance rails, and an AI advisor that respects your tier."}
               </p>
+
+              {/* Trust strip */}
+              <section className="mt-8 p-6 rounded-xl border border-[var(--accent-line)] bg-[var(--card-bg)]" aria-label="Why trust Obsidian Vane">
+                <h2 className="font-disp text-xl mb-3">Why trust Obsidian Vane?</h2>
+                <ul className="list-disc list-inside text-neutral-400 space-y-2">
+                  <li>Prices from verified exchanges (NASDAQ ISE, CryptoCompare).</li>
+                  <li>No hidden fees. The practice-credit wallet is free.</li>
+                  <li>No investment advice. The app is for education and paper-trading only.</li>
+                  <li>Open-source core. All code lives on GitHub (link in footer).</li>
+                </ul>
+              </section>
+
               <div className="flex flex-wrap gap-3 mt-10">
                 <Link to="/sign-in" className="sf-btn sf-btn-p !px-6 !py-4 !text-sm" data-testid="landing-cta-button">Enter the terminal</Link>
                 <button className="sf-btn !px-6 !py-4 !text-sm" onClick={() => setInstall(true)} data-testid="landing-download-button"><Download size={16} /> Download the app</button>
@@ -106,7 +118,7 @@ export default function Landing() {
         </main>
         <footer className="border-t border-white/[0.06] py-6 flex flex-col sm:flex-row gap-2 sm:gap-6 justify-between sm:items-center font-mono text-[11px] tracking-[0.12em] text-neutral-400">
           <span>© {year} {s?.site_name || "OBSIDIAN VANE"}</span>
-          <span>{s?.tagline || "MARKET INTELLIGENCE"} · MARKET DATA MAY BE DELAYED · NOT INVESTMENT ADVICE</span>
+          <span>{s?.tagline || "MARKET DATA MAY BE DELAYED · NOT INVESTMENT ADVICE"}</span>
           <div className="flex gap-2 sm:gap-5">
             <button className="min-h-[44px] px-2 hover:text-neutral-200 transition-colors" onClick={() => setInstall(true)}>INSTALL</button>
             <Link to="/sign-in" className="min-h-[44px] inline-flex items-center px-2 hover:text-neutral-200 transition-colors">SIGN IN</Link>
